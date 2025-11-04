@@ -1,0 +1,3 @@
+Alperen Yılmaz's progress
+
+1- sakila "customer" table data file added to Data folder
