@@ -1,3 +1,4 @@
 Cengizhan Kırpık's progress
 
 1- payment_method column added to the payment table with diverse data
+2- sakila "payment" table data file added to Data folder
