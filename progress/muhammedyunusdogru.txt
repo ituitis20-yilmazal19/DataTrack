@@ -1,0 +1,4 @@
+yunusdogru's progress
+
+1- "rental_status" column added to the data_rental.sql
+2_ data_rental and Sakila Schema Analysis added to the data folder
