@@ -1,0 +1,3 @@
+Emir Buğra Şahin's progress
+
+1- sakila "language", "category", "actor", "film", "film_actor", and "film_category" tables added to the Data folder
