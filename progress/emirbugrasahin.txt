@@ -1,3 +1,5 @@
 Emir Buğra Şahin's progress
 
 1- sakila "language", "category", "actor", "film", "film_actor", and "film_category" tables added to the Data folder
+
+2- utils/table_operations.py added with films class
