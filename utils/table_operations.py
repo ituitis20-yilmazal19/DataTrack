@@ -154,3 +154,83 @@ class Films:
             cur.execute("SELECT COUNT(*) FROM film")
             (n,) = cur.fetchone()
             return int(n)
+
+class Addresses:
+    """address tablosu için CRUD helper"""
+    def __init__(self, connection_factory: Callable[[], mysql.connector.MySQLConnection]):
+        self.connection_factory = connection_factory
+
+    def get_addresses(self, city=None, addr_id=None) -> List[Dict[str, Any]]:
+        with self.connection_factory() as conn, conn.cursor(dictionary=True) as cur:
+            query = """
+                SELECT 
+                    a.address_id, a.address, a.address2, a.district,
+                    a.postal_code, a.phone,
+                    c.city, co.country
+                FROM address a
+                JOIN city c ON a.city_id = c.city_id
+                JOIN country co ON c.country_id = co.country_id
+            """
+            filters, params = [], []
+            if city:
+                filters.append("c.city=%s")
+                params.append(city)
+            if addr_id:
+                filters.append("a.address_id=%s")
+                params.append(addr_id)
+            if filters:
+                query += " WHERE " + " AND ".join(filters)
+            query += " ORDER BY a.address_id ASC"
+
+            cur.execute(query, params)
+            return cur.fetchall()
+
+    def get_cities(self):
+        with self.connection_factory() as conn, conn.cursor(dictionary=True) as cur:
+            cur.execute("""
+                SELECT c.city_id, c.city, co.country
+                FROM city c
+                JOIN country co ON c.country_id = co.country_id
+                ORDER BY c.city_id ASC
+            """)
+            return cur.fetchall()
+
+    def add_address(self, form):
+        with self.connection_factory() as conn, conn.cursor(dictionary=True) as cur:
+            cur.execute("""
+                INSERT INTO address (address, address2, district, city_id, postal_code, phone)
+                VALUES (%s, %s, %s, %s, %s, %s)
+            """, (
+                form.get("address"),
+                form.get("address2"),
+                form.get("district"),
+                form.get("city_id"),
+                form.get("postal_code"),
+                form.get("phone"),
+            ))
+            conn.commit()
+
+    def update_address(self, form):
+        if not form.get("id"):
+            return
+        with self.connection_factory() as conn, conn.cursor(dictionary=True) as cur:
+            cur.execute("""
+                UPDATE address
+                   SET address=%s, address2=%s, district=%s, city_id=%s,
+                       postal_code=%s, phone=%s
+                 WHERE address_id=%s
+            """, (
+                form.get("address"),
+                form.get("address2"),
+                form.get("district"),
+                form.get("city_id"),
+                form.get("postal_code"),
+                form.get("phone"),
+                form.get("id")
+            ))
+            conn.commit()
+
+    def delete_address(self, addr_id):
+        with self.connection_factory() as conn, conn.cursor(dictionary=True) as cur:
+            cur.execute("DELETE FROM address WHERE address_id=%s", (addr_id,))
+            conn.commit()
