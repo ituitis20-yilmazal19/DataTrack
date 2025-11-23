@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
 from settings import db_user, db_password, db_host, db_name
 import pymysql
-from utils.table_operations import Films
+from utils.table_operations import Films, Customers
 
 app = Flask(__name__)
 app.secret_key = "dev-only-change-me"
@@ -17,6 +17,7 @@ def get_connection():
     )
 
 films = Films(connection_factory=get_connection)
+customers = Customers(connection_factory=get_connection)
 
 @app.route("/")
 def main():
@@ -94,10 +95,30 @@ def remove_actor(film_id, actor_id):
 def address():
     return render_template("placeholder.html", title="Address")
 
-@app.route("/customers")
-def customers():
-    return render_template("placeholder.html", title="Customers")
 
+
+@app.route("/customers")
+def customers_list():
+    """Show a simple list of customers."""
+    rows = customers.list_customers()  # default limit içeriden geliyor, parametre yok
+    return render_template("customers.html", customers=rows)
+
+
+@app.route("/customers/search")
+def customers_search():
+    """Search customers by name or email."""
+    q = request.args.get("q", default="", type=str)
+    rows = []
+    if q:
+        rows = customers.search_customers(q)
+    return render_template("customers_search.html", customers=rows, query=q)
+
+
+@app.route("/customers/top")
+def customers_top():
+    """Show customers ordered by total payment amount."""
+    rows = customers.top_customers_by_payment()
+    return render_template("customers_top.html", customers=rows)
 @app.route("/payments")
 def payments():
     return render_template("placeholder.html", title="Payments")

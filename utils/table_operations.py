@@ -155,6 +155,133 @@ class Films:
             (n,) = cur.fetchone()
             return int(n)
 
+class Customers:
+    """Data-access helpers for the customer table and related analytics."""
+
+    def __init__(self, connection_factory: Callable[[], mysql.connector.MySQLConnection]):
+        self.connection_factory = connection_factory
+
+    def list_customers(self, city: str | None = None, active: bool | None = None, limit: int = 100):
+        """
+        List customers with address, city and country info.
+        .
+        """
+        query = """
+            SELECT 
+                c.customer_id,
+                c.first_name,
+                c.last_name,
+                c.email,
+                c.active,
+                c.create_date,
+                a.address,
+                a.district,
+                a.postal_code,
+                a.phone,
+                ci.city,
+                co.country
+            FROM customer c
+            JOIN address a ON c.address_id = a.address_id
+            JOIN city ci ON a.city_id = ci.city_id
+            JOIN country co ON ci.country_id = co.country_id
+        """
+
+        filters = []
+        params = []
+
+        if city:
+            filters.append("ci.city = %s")
+            params.append(city)
+        if active is not None:
+            filters.append("c.active = %s")
+            params.append(1 if active else 0)
+
+        if filters:
+            query += " WHERE " + " AND ".join(filters)
+
+        query += " ORDER BY c.customer_id ASC LIMIT %s"
+        params.append(limit)
+
+        with self.connection_factory() as conn, conn.cursor(dictionary=True) as cur:
+            cur.execute(query, params)
+            return cur.fetchall()
+
+    def search_customers(self, q: str, limit: int = 50):
+        """
+        Search customers by first name, last name or email.
+        """
+        like = f"%{q}%"
+        query = """
+            SELECT 
+                c.customer_id,
+                c.first_name,
+                c.last_name,
+                c.email,
+                c.active
+            FROM customer c
+            WHERE c.first_name LIKE %s
+               OR c.last_name LIKE %s
+               OR c.email LIKE %s
+            ORDER BY c.last_name, c.first_name
+            LIMIT %s
+        """
+        params = (like, like, like, limit)
+        with self.connection_factory() as conn, conn.cursor(dictionary=True) as cur:
+            cur.execute(query, params)
+            return cur.fetchall()
+
+    def top_customers_by_payment(self, limit: int = 10):
+        """
+            Return customers ordered by total payment amount (descending).
+        """
+        query = """
+            SELECT 
+                c.customer_id,
+                c.first_name,
+                c.last_name,
+                c.email,
+                SUM(p.amount) AS total_spent,
+                COUNT(p.payment_id) AS payment_count
+            FROM customer c
+            JOIN payment p ON p.customer_id = c.customer_id
+            GROUP BY c.customer_id, c.first_name, c.last_name, c.email
+            ORDER BY total_spent DESC
+            LIMIT %s
+        """
+        with self.connection_factory() as conn, conn.cursor(dictionary=True) as cur:
+            cur.execute(query, (limit,))
+            return cur.fetchall()
+
+    def get_customer(self, customer_id: int):
+        """
+        Get a single customer with address details.
+        """
+        query = """
+            SELECT 
+                c.customer_id,
+                c.first_name,
+                c.last_name,
+                c.email,
+                c.active,
+                c.create_date,
+                a.address,
+                a.district,
+                a.postal_code,
+                a.phone,
+                ci.city,
+                co.country
+            FROM customer c
+            JOIN address a ON c.address_id = a.address_id
+            JOIN city ci ON a.city_id = ci.city_id
+            JOIN country co ON ci.country_id = co.country_id
+            WHERE c.customer_id = %s
+        """
+        with self.connection_factory() as conn, conn.cursor(dictionary=True) as cur:
+            cur.execute(query, (customer_id,))
+            row = cur.fetchone()
+            return row
+
+
 class Addresses:
     """address tablosu için CRUD helper"""
     def __init__(self, connection_factory: Callable[[], mysql.connector.MySQLConnection]):
