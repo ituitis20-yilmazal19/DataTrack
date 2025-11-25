@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Films{% endblock %}
+{% block content %}
+<h1 class="mb-3">Films</h1>
+
+<form method="get" class="row g-2 mb-3">
+  <div class="col-md-4">
+    <input class="form-control" name="q" placeholder="Search title..." value="{{ q or '' }}">
+  </div>
+  <div class="col-md-3">
+    <select class="form-select" name="category_id">
+      <option value="">All categories</option>
+      {% for c in categories %}
+        <option value="{{ c.category_id }}" {{ 'selected' if c.category_id==sel_category_id else '' }}>{{ c.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-md-3">
+    <select class="form-select" name="language_id">
+      <option value="">All languages</option>
+      {% for l in languages %}
+        <option value="{{ l.language_id }}" {{ 'selected' if l.language_id==sel_language_id else '' }}>{{ l.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-md-2">
+    <button class="btn btn-primary w-100" type="submit">Filter</button>
+  </div>
+</form>
+
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-sm align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Title</th><th>Year</th><th>Rating</th><th>Language</th><th>Categories</th><th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for f in films %}
+        <tr>
+          <td>{{ f.title }}</td>
+          <td>{{ f.release_year or '' }}</td>
+          <td>{{ f.rating or '' }}</td>
+          <td>{{ f.language_name }}</td>
+          <td>{{ f.categories or '' }}</td>
+          <td class="text-end"><a class="btn btn-sm btn-outline-primary" href="{{ url_for('film_detail', film_id=f['film_id']) }}">Open</a></td>
+        </tr>
+        {% endfor %}
+        {% if films|length == 0 %}
+        <tr><td colspan="6" class="text-center py-4"><em>No films found</em></td></tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
