@@ -283,81 +283,168 @@ class Customers:
 
 
 class Addresses:
-    """address tablosu için CRUD helper"""
+    """Data-access helpers for the address table."""
     def __init__(self, connection_factory: Callable[[], mysql.connector.MySQLConnection]):
         self.connection_factory = connection_factory
 
-    def get_addresses(self, city=None, addr_id=None) -> List[Dict[str, Any]]:
-        with self.connection_factory() as conn, conn.cursor(dictionary=True) as cur:
-            query = """
-                SELECT 
-                    a.address_id, a.address, a.address2, a.district,
-                    a.postal_code, a.phone,
-                    c.city, co.country
-                FROM address a
-                JOIN city c ON a.city_id = c.city_id
-                JOIN country co ON c.country_id = co.country_id
-            """
-            filters, params = [], []
-            if city:
-                filters.append("c.city=%s")
-                params.append(city)
-            if addr_id:
-                filters.append("a.address_id=%s")
-                params.append(addr_id)
-            if filters:
-                query += " WHERE " + " AND ".join(filters)
-            query += " ORDER BY a.address_id ASC"
+    def search(self, address=None, district=None, postal_code=None, phone=None, 
+               city_id=None, country_id=None, page=1, page_size=20):
+        """Search addresses with optional filters"""
+        offset = (page - 1) * page_size
+        where = []
+        params = []
 
-            cur.execute(query, params)
+        if address:
+            where.append("a.address LIKE %s")
+            params.append(f"%{address}%")
+        if district:
+            where.append("a.district LIKE %s")
+            params.append(f"%{district}%")
+        if postal_code:
+            where.append("a.postal_code LIKE %s")
+            params.append(f"%{postal_code}%")
+        if phone:
+            where.append("a.phone LIKE %s")
+            params.append(f"%{phone}%")
+        if city_id:
+            where.append("a.city_id = %s")
+            params.append(city_id)
+        if country_id:
+            where.append("co.country_id = %s")
+            params.append(country_id)
+
+        where_clause = ("WHERE " + " AND ".join(where)) if where else ""
+
+        sql = f"""
+            SELECT
+                a.address_id, a.address, a.address2, a.district,
+                a.postal_code, a.phone,
+                c.city_id, c.city,
+                co.country_id, co.country
+            FROM address a
+            JOIN city c ON a.city_id = c.city_id
+            JOIN country co ON c.country_id = co.country_id
+            {where_clause}
+            ORDER BY a.address_id ASC
+            LIMIT %s OFFSET %s
+        """
+        params += [page_size, offset]
+        
+        with self.connection_factory() as cn, cn.cursor(dictionary=True) as cur:
+            cur.execute(sql, params)
             return cur.fetchall()
 
-    def get_cities(self):
-        with self.connection_factory() as conn, conn.cursor(dictionary=True) as cur:
-            cur.execute("""
-                SELECT c.city_id, c.city, co.country
-                FROM city c
-                JOIN country co ON c.country_id = co.country_id
-                ORDER BY c.city_id ASC
-            """)
+    def get(self, address_id: int):
+        """Get a single address by ID"""
+        sql = """
+            SELECT
+                a.address_id, a.address, a.address2, a.district,
+                a.postal_code, a.phone,
+                c.city_id, c.city,
+                co.country_id, co.country
+            FROM address a
+            JOIN city c ON a.city_id = c.city_id
+            JOIN country co ON c.country_id = co.country_id
+            WHERE a.address_id = %s
+        """
+        with self.connection_factory() as cn, cn.cursor(dictionary=True) as cur:
+            cur.execute(sql, (address_id,))
+            row = cur.fetchone()
+            return row
+
+    def update(self, address_id: int, data: Dict[str, Any]):
+        """Update an address"""
+        sql = """
+            UPDATE address
+            SET address=%s, address2=%s, district=%s, city_id=%s,
+                postal_code=%s, phone=%s
+            WHERE address_id=%s
+        """
+        params = (
+            data.get("address"),
+            data.get("address2"),
+            data.get("district"),
+            data.get("city_id", type=int),
+            data.get("postal_code"),
+            data.get("phone"),
+            address_id,
+        )
+        with self.connection_factory() as cn, cn.cursor() as cur:
+            cur.execute(sql, params)
+
+    def add(self, data: Dict[str, Any]):
+        """Add a new address"""
+        sql = """
+            INSERT INTO address (address, address2, district, city_id, postal_code, phone)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """
+        params = (
+            data.get("address"),
+            data.get("address2"),
+            data.get("district"),
+            data.get("city_id"),
+            data.get("postal_code"),
+            data.get("phone"),
+        )
+        with self.connection_factory() as cn, cn.cursor() as cur:
+            cur.execute(sql, params)
+
+    def delete(self, address_id: int):
+        """Delete an address"""
+        sql = "DELETE FROM address WHERE address_id=%s"
+        with self.connection_factory() as cn, cn.cursor() as cur:
+            cur.execute(sql, (address_id,))
+
+    def get_cities(self, city_id=None, city_name=None, country_name=None, country_id=None):
+        """Get cities with optional filters"""
+        sql = """
+            SELECT c.city_id, c.city, co.country_id, co.country
+            FROM city c
+            JOIN country co ON c.country_id = co.country_id
+        """
+        where = []
+        params = []
+        
+        if city_id:
+            where.append("c.city_id = %s")
+            params.append(city_id)
+        if city_name:
+            where.append("c.city LIKE %s")
+            params.append(f"%{city_name}%")
+        if country_name:
+            where.append("co.country LIKE %s")
+            params.append(f"%{country_name}%")
+        if country_id:
+            where.append("co.country_id = %s")
+            params.append(country_id)
+        
+        if where:
+            sql += " WHERE " + " AND ".join(where)
+        
+        sql += " ORDER BY c.city_id ASC"
+        
+        with self.connection_factory() as cn, cn.cursor(dictionary=True) as cur:
+            cur.execute(sql, params)
             return cur.fetchall()
 
-    def add_address(self, form):
-        with self.connection_factory() as conn, conn.cursor(dictionary=True) as cur:
-            cur.execute("""
-                INSERT INTO address (address, address2, district, city_id, postal_code, phone)
-                VALUES (%s, %s, %s, %s, %s, %s)
-            """, (
-                form.get("address"),
-                form.get("address2"),
-                form.get("district"),
-                form.get("city_id"),
-                form.get("postal_code"),
-                form.get("phone"),
-            ))
-            conn.commit()
-
-    def update_address(self, form):
-        if not form.get("id"):
-            return
-        with self.connection_factory() as conn, conn.cursor(dictionary=True) as cur:
-            cur.execute("""
-                UPDATE address
-                   SET address=%s, address2=%s, district=%s, city_id=%s,
-                       postal_code=%s, phone=%s
-                 WHERE address_id=%s
-            """, (
-                form.get("address"),
-                form.get("address2"),
-                form.get("district"),
-                form.get("city_id"),
-                form.get("postal_code"),
-                form.get("phone"),
-                form.get("id")
-            ))
-            conn.commit()
-
-    def delete_address(self, addr_id):
-        with self.connection_factory() as conn, conn.cursor(dictionary=True) as cur:
-            cur.execute("DELETE FROM address WHERE address_id=%s", (addr_id,))
-            conn.commit()
+    def get_countries(self, country_id=None, name=None):
+        """Get countries with optional filters"""
+        sql = "SELECT country_id, country FROM country"
+        where = []
+        params = []
+        
+        if country_id:
+            where.append("country_id = %s")
+            params.append(country_id)
+        if name:
+            where.append("country LIKE %s")
+            params.append(f"%{name}%")
+        
+        if where:
+            sql += " WHERE " + " AND ".join(where)
+        
+        sql += " ORDER BY country_id ASC"
+        
+        with self.connection_factory() as cn, cn.cursor(dictionary=True) as cur:
+            cur.execute(sql, params)
+            return cur.fetchall()
