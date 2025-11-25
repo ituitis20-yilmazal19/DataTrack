@@ -2,4 +2,5 @@ tunahangecit's progress
 
 1- sakila "address", "city" and "country" tables data file added to Data folder
 2- "addresses" class and some related functions added to table_operations.py
-
+3- Some operations added to the addresses class in table_operations.py
+4- Address route added to app.py with list, delete and detail endpoints

@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
 from settings import db_user, db_password, db_host, db_name
 import pymysql
-from utils.table_operations import Films, Customers
+from utils.table_operations import Films, Customers, Addresses
 
 app = Flask(__name__)
 app.secret_key = "dev-only-change-me"
@@ -18,6 +18,7 @@ def get_connection():
 
 films = Films(connection_factory=get_connection)
 customers = Customers(connection_factory=get_connection)
+addresses = Addresses(connection_factory=get_connection)
 
 @app.route("/")
 def main():
@@ -93,7 +94,78 @@ def remove_actor(film_id, actor_id):
 
 @app.route("/address")
 def address():
-    return render_template("placeholder.html", title="Address")
+    """List addresses with optional filters"""
+    address_text = request.args.get("address", default=None, type=str)
+    district = request.args.get("district", default=None, type=str)
+    postal_code = request.args.get("postal_code", default=None, type=str)
+    phone = request.args.get("phone", default=None, type=str)
+    city_id = request.args.get("city_id", type=int)
+    country_id = request.args.get("country_id", type=int)
+    page = max(request.args.get("page", default=1, type=int), 1)
+    page_size = 20
+
+    rows = addresses.search(
+        address=address_text,
+        district=district,
+        postal_code=postal_code,
+        phone=phone,
+        city_id=city_id,
+        country_id=country_id,
+        page=page,
+        page_size=page_size
+    )
+    
+    cities = addresses.get_cities()
+    countries = addresses.get_countries()
+
+    return render_template("address.html",
+                           addresses=rows,
+                           cities=cities,
+                           countries=countries,
+                           sel_city_id=city_id,
+                           sel_country_id=country_id,
+                           address=address_text,
+                           district=district,
+                           postal_code=postal_code,
+                           phone=phone,
+                           page=page)
+
+@app.route("/address/<int:address_id>", methods=["GET", "POST"])
+def address_detail(address_id):
+    """View and edit address details"""
+    if request.method == "POST":
+        payload = {
+            "address": request.form.get("address"),
+            "address2": request.form.get("address2"),
+            "district": request.form.get("district"),
+            "city_id": request.form.get("city_id", type=int),
+            "postal_code": request.form.get("postal_code"),
+            "phone": request.form.get("phone"),
+        }
+        addresses.update(address_id=address_id, data=payload)
+        flash("Address updated", "success")
+        return redirect(url_for("address_detail", address_id=address_id))
+
+    addr = addresses.get(address_id)
+    cities = addresses.get_cities()
+    
+    if not addr:
+        flash("Address not found", "danger")
+        return redirect(url_for("address"))
+
+    return render_template("placeholder.html",
+                           address=addr,
+                           cities=cities)
+
+@app.post("/address/<int:address_id>/delete")
+def address_delete(address_id):
+    """Delete an address"""
+    try:
+        addresses.delete(address_id)
+        flash("Address deleted successfully", "success")
+    except Exception as e:
+        flash(f"Error: {str(e)}", "danger")
+    return redirect(url_for("address"))
 
 
 
