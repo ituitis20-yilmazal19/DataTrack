@@ -7,3 +7,5 @@ Emir Buğra Şahin's progress
 3- first version of app.py is uploaded, films routes are implemented and other routes are placeholders for now
 
 4- templates folder with base and main is created
+
+5- films and film detail files are uploaded
