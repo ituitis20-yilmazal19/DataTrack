@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
 from settings import db_user, db_password, db_host, db_name
 import mysql.connector
-from utils.table_operations import Films, Customers, Addresses, Payments
+from utils.table_operations import Films, Customers, Addresses, Payments, Rentals
 
 app = Flask(__name__)
 app.secret_key = "dev-only-change-me"
@@ -20,6 +20,7 @@ films = Films(connection_factory=get_connection)
 customers = Customers(connection_factory=get_connection)
 addresses = Addresses(connection_factory=get_connection)
 payments = Payments(connection_factory=get_connection)
+rentals = Rentals(connection_factory=get_connection)
 
 @app.route("/")
 def main():
@@ -214,8 +215,45 @@ def payments_list():
                            page=page)
 
 @app.route("/rentals")
-def rentals():
-    return render_template("placeholder.html", title="Rentals")
+def rentals_list():
+    q = request.args.get("q", type=str)
+    status = request.args.get("status", type=str) # 'returned' or 'not_returned'
+    page = max(request.args.get("page", default=1, type=int), 1)
+    
+    rows = rentals.search(q=q, status=status, page=page)
+    
+    return render_template("rentals.html", 
+                           rentals=rows, 
+                           q=q, 
+                           sel_status=status,
+                           page=page)
+
+@app.route("/rental/add", methods=["GET", "POST"])
+def rental_add():
+    if request.method == "POST":
+        customer_id = request.form.get("customer_id", type=int)
+        film_id = request.form.get("film_id", type=int)
+        
+        if customer_id and film_id:
+            try:
+                rentals.add(customer_id=customer_id, film_id=film_id)
+                flash("Rental created successfully", "success")
+                return redirect(url_for("rentals_list"))
+            except Exception as e:
+                flash(f"Error: {e}", "danger")
+        else:
+            flash("Please select both customer and film", "warning")
+
+    all_customers = customers.list_customers(limit=500) 
+    all_films = films.search(page_size=500)
+    
+    return render_template("rental_add.html", customers=all_customers, films=all_films)
+
+@app.route("/rental/<int:rental_id>/return", methods=["POST"])
+def rental_return(rental_id):
+    rentals.return_film(rental_id)
+    flash("Movie returned successfully", "success")
+    return redirect(url_for("rentals_list"))
 
 
 # Quick health check
