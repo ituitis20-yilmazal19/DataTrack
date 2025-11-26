@@ -2,3 +2,6 @@ yunusdogru's progress
 
 1- "rental_status" column added to the data_rental.sql
 2_ data_rental and Sakila Schema Analysis added to the data folder
+3_ created `rentals.html` and `rental_add.html` and updated `base.html` under templates
+4_ implemented "Rentals" class and created "search, "add" and "return_film" methods in `table_operations.py`
+5_ Integrated rental routes into the main `app.py`.
