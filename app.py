@@ -1,13 +1,13 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
 from settings import db_user, db_password, db_host, db_name
-import pymysql
+import mysql.connector
 from utils.table_operations import Films, Customers, Addresses
 
 app = Flask(__name__)
 app.secret_key = "dev-only-change-me"
 
 def get_connection():
-    return pymysql.connect(
+    return mysql.connector.connect(
         host=db_host,
         user=db_user,
         password=db_password,
