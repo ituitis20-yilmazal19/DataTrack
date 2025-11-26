@@ -447,4 +447,63 @@ class Addresses:
         
         with self.connection_factory() as cn, cn.cursor(dictionary=True) as cur:
             cur.execute(sql, params)
+
             return cur.fetchall()
+
+class Payments:
+    """Data-access helpers for the payment table."""
+
+    def __init__(self, connection_factory: Callable[[], mysql.connector.MySQLConnection]):
+        self.connection_factory = connection_factory
+
+    def search(self, q=None, payment_method=None, sort_order="desc", page=1, page_size=20):
+        """
+        Search payments with filters (q for amount/ID, payment_method) and pagination.
+        """
+        offset = (page - 1) * page_size
+        where = []
+        params = []
+
+        if payment_method:
+            where.append("Payment_method = %s")
+            params.append(payment_method)
+
+        if q:
+            try:
+                clean_q = q.replace(',', '.')
+                val = float(clean_q)
+                
+                where.append("(amount = %s OR customer_id = %s OR payment_id = %s)")
+                params.extend([val, int(val), int(val)])
+            except ValueError:
+                pass
+
+        where_clause = ("WHERE " + " AND ".join(where)) if where else ""
+
+        if sort_order == "asc":
+            order_clause = "ORDER BY payment_date ASC"
+        else:
+            order_clause = "ORDER BY payment_date DESC"
+
+        sql = f"""
+            SELECT 
+                payment_id, customer_id, staff_id, rental_id, 
+                amount, payment_date, last_update, Payment_method
+            FROM payment
+            {where_clause}
+            {order_clause}
+            LIMIT %s OFFSET %s
+        """
+        params.extend([page_size, offset])
+
+        with self.connection_factory() as conn, conn.cursor(dictionary=True) as cur:
+            cur.execute(sql, params)
+            return cur.fetchall()
+
+    def get(self, payment_id: int):
+        """Get a single payment detail."""
+        sql = "SELECT * FROM payment WHERE payment_id = %s"
+        with self.connection_factory() as conn, conn.cursor(dictionary=True) as cur:
+            cur.execute(sql, (payment_id,))
+            row = cur.fetchone()
+            return row
