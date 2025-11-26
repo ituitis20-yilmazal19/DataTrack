@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
 from settings import db_user, db_password, db_host, db_name
 import mysql.connector
-from utils.table_operations import Films, Customers, Addresses
+from utils.table_operations import Films, Customers, Addresses, Payments
 
 app = Flask(__name__)
 app.secret_key = "dev-only-change-me"
@@ -19,6 +19,7 @@ def get_connection():
 films = Films(connection_factory=get_connection)
 customers = Customers(connection_factory=get_connection)
 addresses = Addresses(connection_factory=get_connection)
+payments = Payments(connection_factory=get_connection)
 
 @app.route("/")
 def main():
@@ -192,8 +193,25 @@ def customers_top():
     rows = customers.top_customers_by_payment()
     return render_template("customers_top.html", customers=rows)
 @app.route("/payments")
-def payments():
-    return render_template("placeholder.html", title="Payments")
+def payments_list():
+    q = request.args.get("q", type=str)
+    payment_method = request.args.get("payment_method", type=str)
+    sort_order = request.args.get("sort_order", default="desc", type=str)
+    page = max(request.args.get("page", default=1, type=int), 1)
+
+    rows = payments.search(
+        q=q, 
+        payment_method=payment_method, 
+        sort_order=sort_order,
+        page=page
+    )
+    
+    return render_template("payment.html", 
+                           payments=rows, 
+                           q=q, 
+                           sel_method=payment_method,
+                           sel_sort=sort_order,
+                           page=page)
 
 @app.route("/rentals")
 def rentals():
@@ -211,3 +229,4 @@ def health():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
