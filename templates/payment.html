@@ -4,18 +4,14 @@
 {% block content %}
 <h1 class="mb-3">Payments</h1>
 
-<!-- Arama ve Filtreleme Formu (films.html ile aynı tasarım yapısında) -->
 <form method="get" class="row g-2 mb-3">
-  <!-- 1. Arama Kutusu -->
   <div class="col-md-4">
     <input class="form-control" name="q" placeholder="Search by Amount or Customer ID..." value="{{ q or '' }}">
   </div>
   
-  <!-- 2. Ödeme Yöntemi Filtresi (Senin Özelliğin) -->
   <div class="col-md-3">
     <select class="form-select" name="payment_method">
       <option value="">All Payment Methods</option>
-      <!-- Seçilen değeri hatırlaması için 'selected' kontrolü ekledik -->
       <option value="Credit Card" {{ 'selected' if sel_method == 'Credit Card' else '' }}>Credit Card</option>
       <option value="Cash" {{ 'selected' if sel_method == 'Cash' else '' }}>Cash</option>
       <option value="Debit Card" {{ 'selected' if sel_method == 'Debit Card' else '' }}>Debit Card</option>
@@ -25,7 +21,6 @@
     </select>
   </div>
 
-  <!-- 3. Tarih Sıralaması (Opsiyonel Ekstra Özellik) -->
   <div class="col-md-3">
     <select class="form-select" name="sort_order">
         <option value="desc">Newest First</option>
@@ -33,13 +28,11 @@
     </select>
   </div>
 
-  <!-- 4. Filtreleme Butonu -->
   <div class="col-md-2">
     <button class="btn btn-primary w-100" type="submit">Filter</button>
   </div>
 </form>
 
-<!-- Tablo Alanı (films.html'deki card ve table yapısının aynısı) -->
 <div class="card shadow-sm">
   <div class="table-responsive">
     <table class="table table-sm align-middle mb-0 table-hover">
@@ -49,7 +42,7 @@
           <th>Customer</th>
           <th>Amount</th>
           <th>Date</th>
-          <th>Payment Method</th> <!-- Senin Eklediğin Sütun -->
+          <th>Payment Method</th> 
           <th></th>
         </tr>
       </thead>
@@ -59,20 +52,17 @@
           <!-- Payment ID -->
           <td>{{ p.payment_id }}</td>
           
-          <!-- Customer ID (Basit bir link ile) -->
           <td>
             <a href="#" class="text-decoration-none fw-bold text-dark">
                 Customer #{{ p.customer_id }}
             </a>
           </td>
           
-          <!-- Amount (Yeşil ve kalın font) -->
           <td class="text-success fw-bold">${{ p.amount }}</td>
           
           <!-- Date -->
           <td class="text-muted small">{{ p.payment_date }}</td>
           
-          <!-- Payment Method (Renkli Badge Mantığı) -->
           <td>
             {% if p.Payment_method == 'Credit Card' %}
                 <span class="badge bg-primary">Credit Card</span>
@@ -91,14 +81,12 @@
             {% endif %}
           </td>
           
-          <!-- Aksiyon Butonu (Films sayfasındaki 'Open' butonu stili) -->
           <td class="text-end">
             <a class="btn btn-sm btn-outline-primary" href="#">Edit</a>
           </td>
         </tr>
         {% endfor %}
 
-        <!-- Veri Bulunamazsa -->
         {% if payments|length == 0 %}
         <tr>
             <td colspan="6" class="text-center py-4 text-muted">
