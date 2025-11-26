@@ -1,21 +1,21 @@
 :root {
-    --primary-color: #4f46e5; /* A modern Indigo */
+    --primary-color: #4f46e5;
     --primary-hover: #4338ca;
-    --bg-color: #f3f4f6;      /* Light gray background, easier on eyes than pure white */
+    --bg-color: #f3f4f6;
     --text-dark: #1f2937;
     --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
 body {
     background-color: var(--bg-color);
-    font-family: 'Inter', sans-serif; /* The new font */
+    font-family: 'Inter', sans-serif;
     color: var(--text-dark);
     -webkit-font-smoothing: antialiased;
 }
 
 /* --- Navigation --- */
 .navbar {
-    background: #111827; /* Darker, richer black */
+    background: #111827;
     padding-top: 1rem;
     padding-bottom: 1rem;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
@@ -33,16 +33,15 @@ body {
 }
 
 .nav-link:hover {
-    color: #a5b4fc !important; /* Light indigo on hover */
+    color: #a5b4fc !important;
 }
 
-/* --- Cards (The Container for your tables/forms) --- */
 .card {
-    border: none; /* Remove default ugly border */
-    border-radius: 12px; /* Smoother corners */
-    box-shadow: var(--card-shadow); /* Add depth */
+    border: none;
+    border-radius: 12px;
+    box-shadow: var(--card-shadow);
     background: white;
-    overflow: hidden; /* Keeps children inside the rounded corners */
+    overflow: hidden;
 }
 
 /* --- Tables --- */
@@ -58,13 +57,13 @@ body {
 }
 
 .table tbody td {
-    padding: 16px; /* More breathing room */
+    padding: 16px;
     border-bottom: 1px solid #f3f4f6;
     vertical-align: middle;
 }
 
 .table tbody tr:hover {
-    background-color: #f9fafb; /* Subtle hover effect */
+    background-color: #f9fafb;
 }
 
 /* --- Buttons --- */
@@ -79,7 +78,7 @@ body {
 
 .btn-primary:hover {
     background-color: var(--primary-hover);
-    transform: translateY(-1px); /* Slight lift on hover */
+    transform: translateY(-1px);
     box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.4);
 }
 
@@ -103,11 +102,12 @@ body {
 
 .form-control:focus, .form-select:focus {
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2); /* Indigo glow */
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
 }
 
 h1, h5 {
     font-weight: 700;
     letter-spacing: -0.025em;
     margin-bottom: 1.5rem;
+
 }
