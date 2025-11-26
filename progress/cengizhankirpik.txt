@@ -2,3 +2,6 @@ Cengizhan Kırpık's progress
 
 1- payment_method column added to the payment table with diverse data
 2- sakila "payment" table data file added to the Data folder
+3- payment.html added to templates
+4- "payment" class and related operations are added to table_operations.py
+5- Payments route added to app.py
