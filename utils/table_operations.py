@@ -507,3 +507,4 @@ class Payments:
             cur.execute(sql, (payment_id,))
             row = cur.fetchone()
             return row
+
