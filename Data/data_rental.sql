@@ -1,7 +1,7 @@
 USE sakila;
 
 SET AUTOCOMMIT=0;
-INSERT INTO rental (rental_id, rental_date, film_id, customer_id, return_date, last_update) VALUES
+INSERT IGNORE INTO rental (rental_id, rental_date, film_id, customer_id, return_date, last_update) VALUES
 (1, '2005-05-24 22:53:30', 80, 130, '2005-05-26 22:04:30', '2006-02-15 21:30:53'),
 (2, '2005-05-24 22:54:33', 333, 459, '2005-05-28 19:40:33', '2006-02-15 21:30:53'),
 (3, '2005-05-24 23:03:39', 373, 408, '2005-06-01 22:12:39', '2006-02-15 21:30:53'),
@@ -16048,12 +16048,12 @@ INSERT INTO rental (rental_id, rental_date, film_id, customer_id, return_date, l
 (16049, '2005-08-23 22:50:12', 585, 393, '2005-08-30 01:01:12', '2006-02-15 21:30:53');
 COMMIT;
 
--- First, assign a default value to all rows.
+
 ALTER TABLE rental
-MODIFY COLUMN rental_status VARCHAR(20)
+ADD COLUMN rental_status VARCHAR(20)
 NOT NULL DEFAULT 'Rented';
 
--- Now, update the default 'Rented' value for some cases
+
 UPDATE rental
 SET rental_status = CASE
   WHEN return_date IS NULL THEN 'Rented'
@@ -16061,4 +16061,3 @@ SET rental_status = CASE
   WHEN NOW() >= return_date AND NOW() < DATE_ADD(return_date, INTERVAL 3 DAY) THEN 'Late'
   ELSE 'Returned'
 END;
-
