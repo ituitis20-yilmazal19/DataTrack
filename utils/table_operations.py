@@ -487,7 +487,7 @@ class Payments:
 
         sql = f"""
             SELECT 
-                payment_id, customer_id, staff_id, rental_id, 
+                payment_id, customer_id, rental_id, 
                 amount, payment_date, last_update, Payment_method
             FROM payment
             {where_clause}
@@ -508,3 +508,84 @@ class Payments:
             row = cur.fetchone()
             return row
 
+class Rentals:
+    """Data-access helpers for the rental table."""
+    def __init__(self, connection_factory: Callable[[], mysql.connector.MySQLConnection]):
+        self.connection_factory = connection_factory
+
+    def search(self, q=None, status=None, page=1, page_size=20):
+        """
+        Searching in Rental Tables.
+        status: 'returned', 'not_returned' or None
+        q: Customer name or film name search
+        """
+        offset = (page - 1) * page_size
+        where = []
+        params = []
+
+
+        if status == 'not_returned':
+            where.append("r.return_date IS NULL")
+        elif status == 'returned':
+            where.append("r.return_date IS NOT NULL")
+
+        if q:
+            like_q = f"%{q}%"
+            where.append("(CONCAT(c.first_name, ' ', c.last_name) LIKE %s OR f.title LIKE %s)")
+            params.extend([like_q, like_q])
+
+        where_clause = ("WHERE " + " AND ".join(where)) if where else ""
+
+        sql = f"""
+            SELECT 
+                r.rental_id, r.rental_date, r.return_date,
+                c.customer_id, c.first_name, c.last_name,
+                f.film_id, f.title
+            FROM rental r
+            JOIN customer c ON r.customer_id = c.customer_id
+            JOIN film f ON r.film_id = f.film_id
+            {where_clause}
+            ORDER BY r.rental_date DESC
+            LIMIT %s OFFSET %s
+        """
+        params.extend([page_size, offset])
+
+        with self.connection_factory() as cn, cn.cursor() as cur:
+            cur.execute(sql, params)
+            return _dict_rows(cur)
+
+    def get(self, rental_id: int):
+        """Only one rental but with details"""
+        sql = """
+            SELECT 
+                r.*,
+                c.first_name, c.last_name,
+                f.title
+            FROM rental r
+            JOIN customer c ON r.customer_id = c.customer_id
+            JOIN film f ON r.film_id = f.film_id
+            WHERE r.rental_id = %s
+        """
+        with self.connection_factory() as cn, cn.cursor() as cur:
+            cur.execute(sql, (rental_id,))
+            rows = _dict_rows(cur)
+            return rows[0] if rows else None
+
+    def add(self, customer_id, film_id):
+        """New rental (Today's date)"""
+        sql = """
+            INSERT INTO rental (rental_date, film_id, customer_id)
+            VALUES (NOW(), %s, %s)
+        """
+        with self.connection_factory() as cn, cn.cursor() as cur:
+            cur.execute(sql, (film_id, customer_id))
+
+    def return_film(self, rental_id):
+        """Return film"""
+        sql = """
+            UPDATE rental
+            SET return_date = NOW()
+            WHERE rental_id = %s
+        """
+        with self.connection_factory() as cn, cn.cursor() as cur:
+            cur.execute(sql, (rental_id,))
