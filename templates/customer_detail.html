@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit Customer' if customer else 'Add New Customer' }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-header bg-white py-3">
+                <h4 class="mb-0 text-primary">
+                    {{ 'Edit Customer' if customer else 'Save New Customer' }}
+                </h4>
+            </div>
+            <div class="card-body p-4">
+                <form method="post">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">First Name</label>
+                            <input type="text" class="form-control" name="first_name" 
+                                   value="{{ customer.first_name if customer else '' }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Last Name</label>
+                            <input type="text" class="form-control" name="last_name" 
+                                   value="{{ customer.last_name if customer else '' }}" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Email Address</label>
+                        <input type="email" class="form-control" name="email" 
+                               value="{{ customer.email if customer else '' }}">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Address</label>
+                        <select class="form-select" name="address_id" required>
+                            <option value="">Select an address...</option>
+                            {% for addr in addresses %}
+                                <option value="{{ addr.address_id }}" 
+                                    {{ 'selected' if customer and customer.address_id == addr.address_id else '' }}>
+                                    {{ addr.address }}, {{ addr.city }} ({{ addr.country }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text">
+                            Address not found? <a href="{{ url_for('address') }}">Create new address</a>
+                        </div>
+                    </div>
+
+                    <div class="mb-4 form-check">
+                        <input type="checkbox" class="form-check-input" name="active" id="activeCheck" 
+                            {{ 'checked' if (customer and customer.active) or not customer else '' }}>
+                        <label class="form-check-label" for="activeCheck">Active Customer</label>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary px-4">Save</button>
+                        <a href="{{ url_for('customers_list') }}" class="btn btn-secondary px-4">Cancel</a>
+                        
+                        {% if customer %}
+                        <button type="submit" formaction="{{ url_for('customer_delete', customer_id=customer.customer_id) }}" 
+                                class="btn btn-outline-danger ms-auto" 
+                                onclick="return confirm('Delete this customer?');">Delete</button>
+                        {% endif %}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

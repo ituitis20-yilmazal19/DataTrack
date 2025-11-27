@@ -16,6 +16,7 @@ def get_connection():
         autocommit=True,
     )
 
+# Sınıfları başlat
 films = Films(connection_factory=get_connection)
 customers = Customers(connection_factory=get_connection)
 addresses = Addresses(connection_factory=get_connection)
@@ -26,6 +27,7 @@ rentals = Rentals(connection_factory=get_connection)
 def main():
     return render_template("main.html")
 
+# --- FILMS ---
 @app.route("/films")
 def films_list():
     category_id = request.args.get("category_id", type=int)
@@ -94,9 +96,9 @@ def remove_actor(film_id, actor_id):
     flash("Actor removed", "info")
     return redirect(url_for("film_detail", film_id=film_id))
 
+# --- ADDRESS ---
 @app.route("/address")
 def address():
-    """List addresses with optional filters"""
     address_text = request.args.get("address", default=None, type=str)
     district = request.args.get("district", default=None, type=str)
     postal_code = request.args.get("postal_code", default=None, type=str)
@@ -107,34 +109,22 @@ def address():
     page_size = 20
 
     rows = addresses.search(
-        address=address_text,
-        district=district,
-        postal_code=postal_code,
-        phone=phone,
-        city_id=city_id,
-        country_id=country_id,
-        page=page,
-        page_size=page_size
+        address=address_text, district=district, postal_code=postal_code,
+        phone=phone, city_id=city_id, country_id=country_id,
+        page=page, page_size=page_size
     )
     
     cities = addresses.get_cities()
     countries = addresses.get_countries()
 
     return render_template("address.html",
-                           addresses=rows,
-                           cities=cities,
-                           countries=countries,
-                           sel_city_id=city_id,
-                           sel_country_id=country_id,
-                           address=address_text,
-                           district=district,
-                           postal_code=postal_code,
-                           phone=phone,
-                           page=page)
+                           addresses=rows, cities=cities, countries=countries,
+                           sel_city_id=city_id, sel_country_id=country_id,
+                           address=address_text, district=district,
+                           postal_code=postal_code, phone=phone, page=page)
 
 @app.route("/address/<int:address_id>", methods=["GET", "POST"])
 def address_detail(address_id):
-    """View and edit address details"""
     if request.method == "POST":
         payload = {
             "address": request.form.get("address"),
@@ -161,7 +151,6 @@ def address_detail(address_id):
 
 @app.post("/address/<int:address_id>/delete")
 def address_delete(address_id):
-    """Delete an address"""
     try:
         addresses.delete(address_id)
         flash("Address deleted successfully", "success")
@@ -169,30 +158,78 @@ def address_delete(address_id):
         flash(f"Error: {str(e)}", "danger")
     return redirect(url_for("address"))
 
-
-
+# --- CUSTOMERS (Düzeltilmiş) ---
 @app.route("/customers")
 def customers_list():
-    """Show a simple list of customers."""
-    rows = customers.list_customers()  # default limit içeriden geliyor, parametre yok
-    return render_template("customers.html", customers=rows)
+    q = request.args.get("q", type=str)
+    page = max(request.args.get("page", default=1, type=int), 1)
+    
+    # Hata Düzeltildi: 'limit' yerine 'page_size' kullanılıyor
+    rows = customers.list_customers(q=q, page=page, page_size=20)
+    
+    return render_template("customers.html", customers=rows, q=q, page=page)
 
+@app.route("/customer/add", methods=["GET", "POST"])
+def customer_add():
+    if request.method == "POST":
+        payload = {
+            "first_name": request.form.get("first_name"),
+            "last_name": request.form.get("last_name"),
+            "email": request.form.get("email"),
+            "address_id": request.form.get("address_id", type=int),
+            "active": 1 if request.form.get("active") else 0
+        }
+        try:
+            customers.add(payload)
+            flash("Customer saved successfully!", "success")
+            return redirect(url_for("customers_list"))
+        except Exception as e:
+            flash(f"Error adding customer: {e}", "danger")
 
-@app.route("/customers/search")
-def customers_search():
-    """Search customers by name or email."""
-    q = request.args.get("q", default="", type=str)
-    rows = []
-    if q:
-        rows = customers.search_customers(q)
-    return render_template("customers_search.html", customers=rows, query=q)
+    all_addresses = addresses.search(page_size=100)
+    return render_template("customer_detail.html", customer=None, addresses=all_addresses)
 
+@app.route("/customer/<int:customer_id>", methods=["GET", "POST"])
+def customer_detail(customer_id):
+    if request.method == "POST":
+        payload = {
+            "first_name": request.form.get("first_name"),
+            "last_name": request.form.get("last_name"),
+            "email": request.form.get("email"),
+            "address_id": request.form.get("address_id", type=int),
+            "active": 1 if request.form.get("active") else 0
+        }
+        try:
+            customers.update(customer_id, payload)
+            flash("Customer updated successfully", "success")
+            return redirect(url_for("customers_list"))
+        except Exception as e:
+            flash(f"Error updating: {e}", "danger")
+            return redirect(url_for("customer_detail", customer_id=customer_id))
+    
+    cust = customers.get(customer_id)
+    if not cust:
+        flash("Customer not found", "danger")
+        return redirect(url_for("customers_list"))
+        
+    all_addresses = addresses.search(page_size=100)
+    return render_template("customer_detail.html", customer=cust, addresses=all_addresses)
+
+@app.post("/customer/<int:customer_id>/delete")
+def customer_delete(customer_id):
+    try:
+        customers.delete(customer_id)
+        flash("Customer deleted", "info")
+    except Exception as e:
+        flash(f"Cannot delete customer (Has rentals/payments?): {e}", "danger")
+    return redirect(url_for("customers_list"))
 
 @app.route("/customers/top")
 def customers_top():
-    """Show customers ordered by total payment amount."""
     rows = customers.top_customers_by_payment()
     return render_template("customers_top.html", customers=rows)
+
+# --- PAYMENTS ---
 @app.route("/payments")
 def payments_list():
     q = request.args.get("q", type=str)
@@ -200,33 +237,21 @@ def payments_list():
     sort_order = request.args.get("sort_order", default="desc", type=str)
     page = max(request.args.get("page", default=1, type=int), 1)
 
-    rows = payments.search(
-        q=q, 
-        payment_method=payment_method, 
-        sort_order=sort_order,
-        page=page
-    )
+    rows = payments.search(q=q, payment_method=payment_method, sort_order=sort_order, page=page)
     
-    return render_template("payment.html", 
-                           payments=rows, 
-                           q=q, 
-                           sel_method=payment_method,
-                           sel_sort=sort_order,
-                           page=page)
+    return render_template("payment.html", payments=rows, q=q, 
+                           sel_method=payment_method, sel_sort=sort_order, page=page)
 
+# --- RENTALS ---
 @app.route("/rentals")
 def rentals_list():
     q = request.args.get("q", type=str)
-    status = request.args.get("status", type=str) # 'returned' or 'not_returned'
+    status = request.args.get("status", type=str)
     page = max(request.args.get("page", default=1, type=int), 1)
     
     rows = rentals.search(q=q, status=status, page=page)
     
-    return render_template("rentals.html", 
-                           rentals=rows, 
-                           q=q, 
-                           sel_status=status,
-                           page=page)
+    return render_template("rentals.html", rentals=rows, q=q, sel_status=status, page=page)
 
 @app.route("/rental/add", methods=["GET", "POST"])
 def rental_add():
@@ -244,7 +269,8 @@ def rental_add():
         else:
             flash("Please select both customer and film", "warning")
 
-    all_customers = customers.list_customers(limit=500) 
+    # HATA DÜZELTİLDİ: 'limit' parametresi 'page_size' yapıldı
+    all_customers = customers.list_customers(page_size=500) 
     all_films = films.search(page_size=500)
     
     return render_template("rental_add.html", customers=all_customers, films=all_films)
@@ -255,8 +281,6 @@ def rental_return(rental_id):
     flash("Movie returned successfully", "success")
     return redirect(url_for("rentals_list"))
 
-
-# Quick health check
 @app.get("/health")
 def health():
     try:
@@ -267,4 +291,3 @@ def health():
 
 if __name__ == "__main__":
     app.run(debug=True)
-

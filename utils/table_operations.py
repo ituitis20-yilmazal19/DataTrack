@@ -161,12 +161,23 @@ class Customers:
     def __init__(self, connection_factory: Callable[[], mysql.connector.MySQLConnection]):
         self.connection_factory = connection_factory
 
-    def list_customers(self, city: str | None = None, active: bool | None = None, limit: int = 100):
+    def list_customers(self, q: str = None, page: int = 1, page_size: int = 20):
         """
-        List customers with address, city and country info.
-        .
+        List customers with pagination and search (q).
+        Includes join with address/city/country for display.
         """
-        query = """
+        offset = (page - 1) * page_size
+        where = []
+        params = []
+
+        if q:
+            like_q = f"%{q}%"
+            where.append("(c.first_name LIKE %s OR c.last_name LIKE %s OR c.email LIKE %s)")
+            params.extend([like_q, like_q, like_q])
+
+        where_clause = ("WHERE " + " AND ".join(where)) if where else ""
+
+        query = f"""
             SELECT 
                 c.customer_id,
                 c.first_name,
@@ -175,64 +186,84 @@ class Customers:
                 c.active,
                 c.create_date,
                 a.address,
-                a.district,
-                a.postal_code,
-                a.phone,
                 ci.city,
                 co.country
             FROM customer c
-            JOIN address a ON c.address_id = a.address_id
-            JOIN city ci ON a.city_id = ci.city_id
-            JOIN country co ON ci.country_id = co.country_id
+            LEFT JOIN address a ON c.address_id = a.address_id
+            LEFT JOIN city ci ON a.city_id = ci.city_id
+            LEFT JOIN country co ON ci.country_id = co.country_id
+            {where_clause}
+            ORDER BY c.last_name, c.first_name
+            LIMIT %s OFFSET %s
         """
-
-        filters = []
-        params = []
-
-        if city:
-            filters.append("ci.city = %s")
-            params.append(city)
-        if active is not None:
-            filters.append("c.active = %s")
-            params.append(1 if active else 0)
-
-        if filters:
-            query += " WHERE " + " AND ".join(filters)
-
-        query += " ORDER BY c.customer_id ASC LIMIT %s"
-        params.append(limit)
+        params.extend([page_size, offset])
 
         with self.connection_factory() as conn, conn.cursor(dictionary=True) as cur:
             cur.execute(query, params)
             return cur.fetchall()
 
-    def search_customers(self, q: str, limit: int = 50):
+    def get(self, customer_id: int):
         """
-        Search customers by first name, last name or email.
+        Get a single customer with details for editing.
         """
-        like = f"%{q}%"
         query = """
             SELECT 
-                c.customer_id,
-                c.first_name,
-                c.last_name,
-                c.email,
-                c.active
+                c.*,
+                a.address, a.city_id, ci.city, co.country
             FROM customer c
-            WHERE c.first_name LIKE %s
-               OR c.last_name LIKE %s
-               OR c.email LIKE %s
-            ORDER BY c.last_name, c.first_name
-            LIMIT %s
+            LEFT JOIN address a ON c.address_id = a.address_id
+            LEFT JOIN city ci ON a.city_id = ci.city_id
+            LEFT JOIN country co ON ci.country_id = co.country_id
+            WHERE c.customer_id = %s
         """
-        params = (like, like, like, limit)
         with self.connection_factory() as conn, conn.cursor(dictionary=True) as cur:
-            cur.execute(query, params)
-            return cur.fetchall()
+            cur.execute(query, (customer_id,))
+            return cur.fetchone()
+
+    def add(self, data: Dict[str, Any]):
+        """Create a new customer."""
+        sql = """
+            INSERT INTO customer (first_name, last_name, email, address_id, active, create_date)
+            VALUES (%s, %s, %s, %s, %s, NOW())
+        """
+        params = (
+            data.get("first_name"),
+            data.get("last_name"),
+            data.get("email"),
+            data.get("address_id"),
+            data.get("active", 1)
+        )
+        with self.connection_factory() as conn, conn.cursor() as cur:
+            cur.execute(sql, params)
+
+    def update(self, customer_id: int, data: Dict[str, Any]):
+        """Update existing customer."""
+        sql = """
+            UPDATE customer 
+            SET first_name=%s, last_name=%s, email=%s, address_id=%s, active=%s
+            WHERE customer_id=%s
+        """
+        params = (
+            data.get("first_name"),
+            data.get("last_name"),
+            data.get("email"),
+            data.get("address_id"),
+            data.get("active"),
+            customer_id
+        )
+        with self.connection_factory() as conn, conn.cursor() as cur:
+            cur.execute(sql, params)
+
+    def delete(self, customer_id: int):
+        """Delete a customer."""
+        # Note: If foreign keys (rentals/payments) exist without CASCADE, this might fail.
+        sql = "DELETE FROM customer WHERE customer_id = %s"
+        with self.connection_factory() as conn, conn.cursor() as cur:
+            cur.execute(sql, (customer_id,))
 
     def top_customers_by_payment(self, limit: int = 10):
         """
-            Return customers ordered by total payment amount (descending).
+        Return customers ordered by total payment amount (descending).
         """
         query = """
             SELECT 
@@ -251,35 +282,6 @@ class Customers:
         with self.connection_factory() as conn, conn.cursor(dictionary=True) as cur:
             cur.execute(query, (limit,))
             return cur.fetchall()
-
-    def get_customer(self, customer_id: int):
-        """
-        Get a single customer with address details.
-        """
-        query = """
-            SELECT 
-                c.customer_id,
-                c.first_name,
-                c.last_name,
-                c.email,
-                c.active,
-                c.create_date,
-                a.address,
-                a.district,
-                a.postal_code,
-                a.phone,
-                ci.city,
-                co.country
-            FROM customer c
-            JOIN address a ON c.address_id = a.address_id
-            JOIN city ci ON a.city_id = ci.city_id
-            JOIN country co ON ci.country_id = co.country_id
-            WHERE c.customer_id = %s
-        """
-        with self.connection_factory() as conn, conn.cursor(dictionary=True) as cur:
-            cur.execute(query, (customer_id,))
-            row = cur.fetchone()
-            return row
 
 
 class Addresses:
