@@ -155,7 +155,7 @@ def address_detail(address_id):
         flash("Address not found", "danger")
         return redirect(url_for("address"))
 
-    return render_template("placeholder.html",
+    return render_template("address_detail.html",
                            address=addr,
                            cities=cities)
 

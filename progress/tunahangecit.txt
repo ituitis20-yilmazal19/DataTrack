@@ -4,3 +4,5 @@ tunahangecit's progress
 2- "addresses" class and some related functions added to table_operations.py
 3- Some operations added to the addresses class in table_operations.py
 4- Address route added to app.py with list, delete and detail endpoints
+5- Address.html added into the templates folder
+6- Address_detail.html added into the templates folder for detail endpoint
