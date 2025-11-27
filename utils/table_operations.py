@@ -465,7 +465,7 @@ class Payments:
         params = []
 
         if payment_method:
-            where.append("Payment_method = %s")
+            where.append("payment_method = %s")
             params.append(payment_method)
 
         if q:
@@ -488,7 +488,7 @@ class Payments:
         sql = f"""
             SELECT 
                 payment_id, customer_id, rental_id, 
-                amount, payment_date, last_update, Payment_method
+                amount, payment_date, last_update, payment_method
             FROM payment
             {where_clause}
             {order_clause}
@@ -588,4 +588,5 @@ class Rentals:
             WHERE rental_id = %s
         """
         with self.connection_factory() as cn, cn.cursor() as cur:
+
             cur.execute(sql, (rental_id,))
