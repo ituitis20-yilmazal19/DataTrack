@@ -54,4 +54,28 @@
     </table>
   </div>
 </div>
+{% if total_pages > 1 %}
+<nav aria-label="Page navigation" class="mt-4">
+  <ul class="pagination justify-content-center">
+    
+    <li class="page-item {% if page <= 1 %}disabled{% endif %}">
+      <a class="page-link" href="{{ url_for(request.endpoint, page=page-1, q=q, category_id=sel_category_id, language_id=sel_language_id) }}">
+        Previous
+      </a>
+    </li>
+
+    <li class="page-item disabled">
+      <span class="page-link">Page {{ page }} of {{ total_pages }}</span>
+    </li>
+
+    <li class="page-item {% if page >= total_pages %}disabled{% endif %}">
+      <a class="page-link" href="{{ url_for(request.endpoint, page=page+1, q=q, category_id=sel_category_id, language_id=sel_language_id) }}">
+        Next
+      </a>
+    </li>
+
+  </ul>
+</nav>
+{% endif %}
 {% endblock %}
+
