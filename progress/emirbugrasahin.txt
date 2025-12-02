@@ -9,3 +9,5 @@ Emir Buğra Şahin's progress
 4- templates folder with base and main is created
 
 5- films and film detail files are uploaded
+
+6- pagination and a simple css are added
