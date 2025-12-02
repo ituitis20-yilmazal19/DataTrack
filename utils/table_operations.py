@@ -155,6 +155,35 @@ class Films:
             (n,) = cur.fetchone()
             return int(n)
 
+    def count_search(self, category_id=None, language_id=None, q=None):
+        where = []
+        params = []
+
+        if language_id:
+            where.append("f.language_id = %s")
+            params.append(language_id)
+        if category_id:
+            where.append("fc.category_id = %s")
+            params.append(category_id)
+        if q:
+            where.append("f.title LIKE %s")
+            params.append(f"%{q}%")
+
+        where_clause = ("WHERE " + " AND ".join(where)) if where else ""
+
+        sql = f"""
+            SELECT COUNT(DISTINCT f.film_id)
+            FROM film AS f
+            JOIN language l ON l.language_id = f.language_id
+            LEFT JOIN film_category fc ON fc.film_id = f.film_id
+            LEFT JOIN category c ON c.category_id = fc.category_id
+            {where_clause}
+        """
+
+        with self.connection_factory() as cn, cn.cursor() as cur:
+            cur.execute(sql, params)
+            return cur.fetchone()[0]
+
 class Customers:
     """Data-access helpers for the customer table and related analytics."""
 
@@ -592,3 +621,4 @@ class Rentals:
         with self.connection_factory() as cn, cn.cursor() as cur:
 
             cur.execute(sql, (rental_id,))
+
