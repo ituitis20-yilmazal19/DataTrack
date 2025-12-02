@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash
 from settings import db_user, db_password, db_host, db_name
 import mysql.connector
 from utils.table_operations import Films, Customers, Addresses, Payments, Rentals
+import math
 
 app = Flask(__name__)
 app.secret_key = "dev-only-change-me"
@@ -35,9 +36,10 @@ def films_list():
     q = request.args.get("q", type=str)
     page = max(request.args.get("page", default=1, type=int), 1)
     page_size = 20
-
     rows = films.search(category_id=category_id, language_id=language_id, q=q,
                         page=page, page_size=page_size)
+    total_count = films.count_search(category_id=category_id, language_id=language_id, q=q)
+    total_pages = math.ceil(total_count / page_size)
     languages = films.languages()
     categories = films.categories()
 
@@ -47,7 +49,9 @@ def films_list():
                            categories=categories,
                            sel_category_id=category_id,
                            sel_language_id=language_id,
-                           q=q, page=page)
+                           q=q,
+                           page=page,
+                           total_pages=total_pages)
 
 @app.route("/film/<int:film_id>", methods=["GET", "POST"])
 def film_detail(film_id):
@@ -290,4 +294,5 @@ def health():
         return f"DB error: {e}", 500
 
 if __name__ == "__main__":
+
     app.run(debug=True)
