@@ -162,6 +162,28 @@ def address_delete(address_id):
         flash(f"Error: {str(e)}", "danger")
     return redirect(url_for("address"))
 
+@app.route("/address/add", methods=["GET", "POST"])
+def address_add():
+    """Add a new address"""
+    if request.method == "POST":
+        payload = {
+            "address": request.form.get("address"),
+            "address2": request.form.get("address2"),
+            "district": request.form.get("district"),
+            "city_id": request.form.get("city_id", type=int),
+            "postal_code": request.form.get("postal_code"),
+            "phone": request.form.get("phone"),
+        }
+        try:
+            addresses.add(payload)
+            flash("Address added successfully", "success")
+            return redirect(url_for("address"))
+        except Exception as e:
+            flash(f"Error: {str(e)}", "danger")
+    
+    cities = addresses.get_cities()
+    return render_template("placeholder.html", cities=cities)
+
 # --- CUSTOMERS (Düzeltilmiş) ---
 @app.route("/customers")
 def customers_list():
