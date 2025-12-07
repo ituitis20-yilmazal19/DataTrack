@@ -395,7 +395,7 @@ class Addresses:
             data.get("address"),
             data.get("address2"),
             data.get("district"),
-            data.get("city_id", type=int),
+            data.get("city_id"),
             data.get("postal_code"),
             data.get("phone"),
             address_id,
