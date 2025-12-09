@@ -11,3 +11,5 @@ Emir Buğra Şahin's progress
 5- films and film detail files are uploaded
 
 6- pagination and a simple css are added
+
+7- category update, film add/delete features are added
