@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}Add New Film{% endblock %}
+{% block content %}
+
+<div class="card p-4">
+  <h2 class="mb-4">Add New Film</h2>
+  
+  <form method="post">
+    <div class="row g-3">
+      
+      <div class="col-md-8">
+        <label class="form-label">Title <span class="text-danger">*</span></label>
+        <input class="form-control" name="title" value="{{ form_data.title if form_data else '' }}" required>
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label">Release Year <span class="text-danger">*</span></label>
+        <input class="form-control" name="release_year" type="number" min="1900" max="2100" 
+               value="{{ form_data.release_year if form_data else '' }}" required>
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">Language <span class="text-danger">*</span></label>
+        <select name="language_id" class="form-select" required>
+          <option value="">Select Language...</option>
+          {% for l in languages %}
+            <option value="{{ l.language_id }}" 
+              {{ 'selected' if form_data and form_data.language_id|int == l.language_id else '' }}>
+              {{ l.name }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">Category <span class="text-danger">*</span></label>
+        <select name="category_id" class="form-select" required>
+          <option value="">Select Category...</option>
+          {% for c in categories %}
+            <option value="{{ c.category_id }}" 
+              {{ 'selected' if form_data and form_data.category_id|int == c.category_id else '' }}>
+              {{ c.name }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label">Rating <span class="text-danger">*</span></label>
+        <select name="rating" class="form-select" required>
+            <option value="">Select...</option>
+            {% for r in ['G','PG','PG-13','R','NC-17'] %}
+            <option value="{{ r }}" {{ 'selected' if form_data and form_data.rating == r else '' }}>{{ r }}</option>
+            {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label">Rental Rate ($) <span class="text-danger">*</span></label>
+        <input class="form-control" name="rental_rate" type="number" step="0.01" 
+               value="{{ form_data.rental_rate if form_data else '0.99' }}" required>
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label">Duration (Days) <span class="text-danger">*</span></label>
+        <input class="form-control" name="rental_duration" type="number" 
+               value="{{ form_data.rental_duration if form_data else '3' }}" required>
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">Length (Minutes) <span class="text-danger">*</span></label>
+        <input class="form-control" name="length" type="number" 
+               value="{{ form_data.length if form_data else '' }}" required>
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">Replacement Cost ($) <span class="text-danger">*</span></label>
+        <input class="form-control" name="replacement_cost" type="number" step="0.01" 
+               value="{{ form_data.replacement_cost if form_data else '19.99' }}" required>
+      </div>
+
+      <div class="col-12">
+        <label class="form-label">Description <span class="text-danger">*</span></label>
+        <textarea class="form-control" name="description" rows="3" required>{{ form_data.description if form_data else '' }}</textarea>
+      </div>
+
+      <div class="col-12 mt-4">
+        <button class="btn btn-primary" type="submit">Create Film</button>
+        <a class="btn btn-secondary" href="{{ url_for('films_list') }}">Cancel</a>
+      </div>
+
+    </div>
+  </form>
+</div>
+{% endblock %}

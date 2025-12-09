@@ -1,7 +1,12 @@
 {% extends "base.html" %}
 {% block title %}Films{% endblock %}
 {% block content %}
-<h1 class="mb-3">Films</h1>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1>Films</h1>
+    <a href="{{ url_for('add_film') }}" class="btn btn-success">
+        <i class="bi bi-plus-lg"></i> Add New Film
+    </a>
+</div>
 
 <form method="get" class="row g-2 mb-3">
   <div class="col-md-4">
@@ -78,4 +83,3 @@
 </nav>
 {% endif %}
 {% endblock %}
-
