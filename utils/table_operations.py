@@ -73,6 +73,47 @@ class Films:
             cur.execute(sql, (film_id,))
             return _dict_rows(cur)
 
+    def add(self, data: Dict[str, Any]) -> int:
+        sql_film = """
+            INSERT INTO film (
+                title, description, release_year, language_id, 
+                rental_duration, rental_rate, length, replacement_cost, rating
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """
+        params = (
+            data["title"], 
+            data["description"], 
+            data["release_year"],
+            data["language_id"], 
+            data["rental_duration"], 
+            data["rental_rate"],
+            data["length"], 
+            data["replacement_cost"], 
+            data["rating"]
+        )
+        
+        category_id = data.get("category_id")
+
+        with self.connection_factory() as cn, cn.cursor() as cur:
+            cur.execute(sql_film, params)
+            new_film_id = cur.lastrowid
+            
+            if category_id:
+                sql_cat = "INSERT INTO film_category (film_id, category_id) VALUES (%s, %s)"
+                cur.execute(sql_cat, (new_film_id, category_id))
+                
+            return new_film_id
+
+    def delete(self, film_id: int):
+        """
+        First removes dependencies in film_actor and film_category 
+        to prevent Foreign Key constraints from failing.
+        """
+        with self.connection_factory() as cn, cn.cursor() as cur:
+            cur.execute("DELETE FROM film_actor WHERE film_id = %s", (film_id,))
+            cur.execute("DELETE FROM film_category WHERE film_id = %s", (film_id,))
+            cur.execute("DELETE FROM film WHERE film_id = %s", (film_id,))
+    
     def actors(self, film_id: int):
         sql = """
             SELECT a.actor_id, a.first_name, a.last_name
@@ -622,5 +663,6 @@ class Rentals:
         with self.connection_factory() as cn, cn.cursor() as cur:
 
             cur.execute(sql, (rental_id,))
+
 
 
