@@ -66,20 +66,21 @@ def film_detail(film_id):
             "length": request.form.get("length", type=int),
             "replacement_cost": request.form.get("replacement_cost", type=float),
             "rental_duration": request.form.get("rental_duration", type=int),
+            "category_id": request.form.get("category_id", type=int),
         }
         films.update(film_id=film_id, data=payload)
         flash("Film updated", "success")
         return redirect(url_for("film_detail", film_id=film_id))
 
     film = films.get(film_id)
-    film_categories = films.film_categories(film_id)
+    categories = films.categories()
     film_actors = films.actors(film_id)
     available_actors = films.available_actors(film_id)
     languages = films.languages()
 
     return render_template("film_detail.html",
                            film=film,
-                           film_categories=film_categories,
+                           categories=categories,
                            actors=film_actors,
                            available_actors=available_actors,
                            languages=languages)
@@ -318,3 +319,4 @@ def health():
 if __name__ == "__main__":
 
     app.run(debug=True)
+
