@@ -28,6 +28,18 @@
             </select>
           </div>
           <div class="col-md-6">
+            <label class="form-label">Category</label>
+            <select name="category_id" class="form-select">
+              <option value="" {{ 'selected' if not film.category_id else '' }}>Select a category...</option>
+              
+              {% for c in categories %}
+                <option value="{{ c.category_id }}" {{ 'selected' if c.category_id == film.category_id else '' }}>
+                  {{ c.name }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-6">
             <label class="form-label">Rating</label>
             <select name="rating" class="form-select">
               {% for r in ['G','PG','PG-13','R','NC-17'] %}
@@ -61,17 +73,6 @@
           <a class="btn btn-secondary" href="{{ url_for('films_list') }}">Back</a>
         </div>
       </form>
-    </div>
-
-    <div class="card p-3 mt-3">
-      <h5>Categories</h5>
-      <p class="mb-0">
-        {% if film_categories %}
-          {{ film_categories | map(attribute='name') | join(', ') }}
-        {% else %}
-          <em>None</em>
-        {% endif %}
-      </p>
     </div>
   </div>
 
@@ -108,3 +109,4 @@
 </div>
 {% endif %}
 {% endblock %}
+
