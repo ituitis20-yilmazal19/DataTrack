@@ -48,10 +48,12 @@ class Films:
 
     def get(self, film_id: int):
         sql = """
-            SELECT f.*, l.name AS language_name, ol.name AS original_language_name
+            SELECT f.*, l.name AS language_name, ol.name AS original_language_name,
+                   fc.category_id
             FROM film f
             JOIN language l ON l.language_id = f.language_id
             LEFT JOIN language ol ON ol.language_id = f.original_language_id
+            LEFT JOIN film_category fc ON fc.film_id = f.film_id
             WHERE f.film_id = %s
         """
         with self.connection_factory() as cn, cn.cursor() as cur:
@@ -108,33 +110,32 @@ class Films:
             return _dict_rows(cur)
 
     def update(self, film_id: int, data: Dict[str, Any]):
-        sql = """
+        sql_film = """
             UPDATE film
-               SET title=%s,
-                   description=%s,
-                   release_year=%s,
-                   language_id=%s,
-                   rating=%s,
-                   rental_rate=%s,
-                   `length`=%s,
-                   replacement_cost=%s,
+               SET title=%s, description=%s, release_year=%s, language_id=%s,
+                   rating=%s, rental_rate=%s, `length`=%s, replacement_cost=%s,
                    rental_duration=%s
              WHERE film_id=%s
         """
-        params = (
-            data.get("title"),
-            data.get("description"),
-            data.get("release_year"),
-            data.get("language_id"),
-            data.get("rating"),
-            data.get("rental_rate"),
-            data.get("length"),
-            data.get("replacement_cost"),
+        params_film = (
+            data.get("title"), data.get("description"), data.get("release_year"),
+            data.get("language_id"), data.get("rating"), data.get("rental_rate"),
+            data.get("length"), data.get("replacement_cost"),
             data.get("rental_duration"),
             film_id,
         )
+        category_id = data.get("category_id")
+        
         with self.connection_factory() as cn, cn.cursor() as cur:
-            cur.execute(sql, params)
+            cur.execute(sql_film, params_film)
+            
+            if category_id:
+                update_cat_sql = "UPDATE film_category SET category_id=%s WHERE film_id=%s"
+                cur.execute(update_cat_sql, (category_id, film_id))
+                
+                if cur.rowcount == 0:
+                    insert_cat_sql = "INSERT INTO film_category (film_id, category_id) VALUES (%s, %s)"
+                    cur.execute(insert_cat_sql, (film_id, category_id))
 
     def add_actor(self, film_id: int, actor_id: int):
         sql_check = "SELECT 1 FROM film_actor WHERE film_id=%s AND actor_id=%s"
@@ -621,4 +622,5 @@ class Rentals:
         with self.connection_factory() as cn, cn.cursor() as cur:
 
             cur.execute(sql, (rental_id,))
+
 
