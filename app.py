@@ -85,6 +85,62 @@ def film_detail(film_id):
                            available_actors=available_actors,
                            languages=languages)
 
+@app.route("/films/add", methods=["GET", "POST"])
+def add_film():
+    if request.method == "POST":
+        title = request.form.get("title")
+        description = request.form.get("description")
+        release_year = request.form.get("release_year")
+        language_id = request.form.get("language_id")
+        rental_duration = request.form.get("rental_duration")
+        rental_rate = request.form.get("rental_rate")
+        length = request.form.get("length")
+        replacement_cost = request.form.get("replacement_cost")
+        rating = request.form.get("rating")
+        category_id = request.form.get("category_id")
+
+        if not all([title, description, release_year, language_id, rental_duration, 
+                    rental_rate, length, replacement_cost, rating, category_id]):
+            flash("All fields are required. Please fill in all data.", "danger")
+            languages = films.languages()
+            categories = films.categories()
+            return render_template("film_add.html", languages=languages, categories=categories, 
+                                   form_data=request.form)
+
+        payload = {
+            "title": title,
+            "description": description,
+            "release_year": int(release_year),
+            "language_id": int(language_id),
+            "rental_duration": int(rental_duration),
+            "rental_rate": float(rental_rate),
+            "length": int(length),
+            "replacement_cost": float(replacement_cost),
+            "rating": rating,
+            "category_id": int(category_id)
+        }
+
+        try:
+            new_id = films.add(payload)
+            flash(f"Film '{title}' created successfully!", "success")
+            return redirect(url_for("film_detail", film_id=new_id))
+        except Exception as e:
+            flash(f"Error creating film: {e}", "danger")
+
+    languages = films.languages()
+    categories = films.categories()
+    return render_template("film_add.html", languages=languages, categories=categories)
+
+@app.post("/film/<int:film_id>/delete")
+def delete_film(film_id):
+    try:
+        films.delete(film_id)
+        flash("Film deleted successfully", "success")
+        return redirect(url_for("films_list"))
+    except Exception as e:
+        flash(f"Could not delete film. Error: {e}", "danger")
+        return redirect(url_for("film_detail", film_id=film_id))
+
 @app.post("/film/<int:film_id>/actors/add")
 def add_actor(film_id):
     actor_id = request.form.get("actor_id", type=int)
@@ -319,4 +375,5 @@ def health():
 if __name__ == "__main__":
 
     app.run(debug=True)
+
 
