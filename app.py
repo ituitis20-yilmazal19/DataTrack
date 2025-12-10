@@ -239,7 +239,7 @@ def address_add():
             flash(f"Error: {str(e)}", "danger")
     
     cities = addresses.get_cities()
-    return render_template("placeholder.html", cities=cities)
+    return render_template("address_add.html", cities=cities)
 
 # --- CUSTOMERS (Düzeltilmiş) ---
 @app.route("/customers")

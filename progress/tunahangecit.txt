@@ -7,3 +7,4 @@ tunahangecit's progress
 5- Address.html added into the templates folder
 6- Address_detail.html added into the templates folder for detail endpoint
 7- Address addition route added to app.py file, location column dropped from address table and made detail page functional for update operation
+8- Address creation page template added to templates folder, corresponding line changed inside routing
