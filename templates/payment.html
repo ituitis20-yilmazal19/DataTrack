@@ -64,20 +64,20 @@
           <td class="text-muted small">{{ p.payment_date }}</td>
           
           <td>
-            {% if p.Payment_method == 'Credit Card' %}
+            {% if p.payment_method == 'Credit Card' %}
                 <span class="badge bg-primary">Credit Card</span>
-            {% elif p.Payment_method == 'Cash' %}
+            {% elif p.payment_method == 'Cash' %}
                 <span class="badge bg-success">Cash</span>
-            {% elif p.Payment_method == 'Debit Card' %}
+            {% elif p.payment_method == 'Debit Card' %}
                 <span class="badge bg-info text-dark">Debit Card</span>
-            {% elif p.Payment_method == 'PayPal' %}
+            {% elif p.payment_method == 'PayPal' %}
                 <span class="badge" style="background-color: #003087;">PayPal</span>
-            {% elif 'Crypto' in p.Payment_method %}
+            {% elif 'Crypto' in p.payment_method %}
                 <span class="badge bg-warning text-dark">Crypto</span>
-            {% elif 'Bank' in p.Payment_method %}
+            {% elif 'Bank' in p.payment_method %}
                 <span class="badge bg-secondary">Bank Transfer</span>
             {% else %}
-                <span class="badge bg-light text-dark border">{{ p.Payment_method }}</span>
+                <span class="badge bg-light text-dark border">{{ p.payment_method }}</span>
             {% endif %}
           </td>
           
