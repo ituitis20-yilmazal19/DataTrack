@@ -64,17 +64,19 @@
           <td class="text-muted small">{{ p.payment_date }}</td>
           
           <td>
-            {% if p.payment_method == 'Credit Card' %}
+            {% set method = p.payment_method|string|trim|lower %}
+
+            {% if method == 'credit card' %}
                 <span class="badge bg-primary">Credit Card</span>
-            {% elif p.payment_method == 'Cash' %}
+            {% elif method == 'cash' %}
                 <span class="badge bg-success">Cash</span>
-            {% elif p.payment_method == 'Debit Card' %}
+            {% elif method == 'debit card' %}
                 <span class="badge bg-info text-dark">Debit Card</span>
-            {% elif p.payment_method == 'PayPal' %}
+            {% elif method == 'paypal' %}
                 <span class="badge" style="background-color: #003087;">PayPal</span>
-            {% elif 'Crypto' in p.payment_method %}
+            {% elif 'crypto' in method %}
                 <span class="badge bg-warning text-dark">Crypto</span>
-            {% elif 'Bank' in p.payment_method %}
+            {% elif 'bank' in method %}
                 <span class="badge bg-secondary">Bank Transfer</span>
             {% else %}
                 <span class="badge bg-light text-dark border">{{ p.payment_method }}</span>
