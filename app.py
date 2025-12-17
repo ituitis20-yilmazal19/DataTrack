@@ -175,6 +175,12 @@ def address():
         page=page, page_size=page_size
     )
     
+    total_count = addresses.count_search(
+        address=address_text, district=district, postal_code=postal_code,
+        phone=phone, city_id=city_id, country_id=country_id
+    )
+    total_pages = math.ceil(total_count / page_size)
+    
     cities = addresses.get_cities()
     countries = addresses.get_countries()
 
@@ -182,7 +188,13 @@ def address():
                            addresses=rows, cities=cities, countries=countries,
                            sel_city_id=city_id, sel_country_id=country_id,
                            address=address_text, district=district,
-                           postal_code=postal_code, phone=phone, page=page)
+                           postal_code=postal_code, phone=phone, page=page,
+                           total_pages=total_pages)
+
+@app.route("/address/top-countries")
+def address_top_countries():
+    rows = addresses.top_countries_by_customers()
+    return render_template("address_top_countries.html", rows=rows)
 
 @app.route("/address/<int:address_id>", methods=["GET", "POST"])
 def address_detail(address_id):

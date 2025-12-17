@@ -523,6 +523,67 @@ class Addresses:
 
             return cur.fetchall()
 
+    def count_search(self, address=None, district=None, postal_code=None, phone=None, 
+                     city_id=None, country_id=None):
+        """Count addresses matching search criteria"""
+        where = []
+        params = []
+
+        if address:
+            where.append("a.address LIKE %s")
+            params.append(f"%{address}%")
+        if district:
+            where.append("a.district LIKE %s")
+            params.append(f"%{district}%")
+        if postal_code:
+            where.append("a.postal_code LIKE %s")
+            params.append(f"%{postal_code}%")
+        if phone:
+            where.append("a.phone LIKE %s")
+            params.append(f"%{phone}%")
+        if city_id:
+            where.append("a.city_id = %s")
+            params.append(city_id)
+        if country_id:
+            where.append("co.country_id = %s")
+            params.append(country_id)
+
+        where_clause = ("WHERE " + " AND ".join(where)) if where else ""
+
+        sql = f"""
+            SELECT COUNT(DISTINCT a.address_id)
+            FROM address a
+            JOIN city c ON a.city_id = c.city_id
+            JOIN country co ON c.country_id = co.country_id
+            {where_clause}
+        """
+
+        with self.connection_factory() as cn, cn.cursor() as cur:
+            cur.execute(sql, params)
+            return cur.fetchone()[0]
+
+    def top_countries_by_customers(self, min_customers: int = 5, limit: int = 10):
+        """
+        Top countries by customer count (filtered by minimum customers).
+        Returns: customer_count, country
+        """
+        query = """
+            SELECT 
+                COUNT(*) AS customer_count, 
+                co.country
+            FROM address a
+            JOIN city c ON a.city_id = c.city_id
+            JOIN country co ON c.country_id = co.country_id
+            JOIN customer cus ON a.address_id = cus.address_id
+            GROUP BY co.country
+            HAVING customer_count > %s
+            ORDER BY customer_count DESC
+            LIMIT %s
+        """
+        with self.connection_factory() as cn, cn.cursor(dictionary=True) as cur:
+            cur.execute(query, (min_customers, limit))
+            return cur.fetchall()
+
 class Payments:
     """Data-access helpers for the payment table."""
 
