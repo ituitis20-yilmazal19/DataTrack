@@ -2,13 +2,13 @@
 {% block title %}Add New Address{% endblock %}
 
 {% block content %}
-<div class="card p-3" style="max-width: 600px;">
+<div class="card p-3">
   <h5>Add New Address</h5>
   <form method="post">
     <div class="row g-2">
       <div class="col-md-12">
-        <label class="form-label">Address Line 1 * Required *</label>
-        <input class="form-control" name="address" placeholder="Enter address">
+        <label class="form-label">Address Line 1 *</label>
+        <input class="form-control" name="address" placeholder="Enter address" required>
       </div>
       <div class="col-md-12">
         <label class="form-label">Address Line 2</label>
@@ -23,7 +23,7 @@
         <input class="form-control" name="postal_code" placeholder="Enter postal code">
       </div>
       <div class="col-md-6">
-        <label class="form-label">City * Required *</label>
+        <label class="form-label">City *</label>
         <select name="city_id" class="form-select" required>
           <option value="">Select a city</option>
           {% for city in cities %}

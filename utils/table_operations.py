@@ -562,12 +562,12 @@ class Addresses:
             cur.execute(sql, params)
             return cur.fetchone()[0]
 
-    def top_countries_by_customers(self, min_customers: int = 5, limit: int = 10):
+    def top_countries_by_customers(self, limit: int = 20):
         """
-        Top countries by customer count (filtered by minimum customers).
-        Returns: customer_count, country
+        Top countries by customer count.
+        Returns: rank, customer_count, country
         """
-        query = """
+        sql = """
             SELECT 
                 COUNT(*) AS customer_count, 
                 co.country
@@ -576,13 +576,18 @@ class Addresses:
             JOIN country co ON c.country_id = co.country_id
             JOIN customer cus ON a.address_id = cus.address_id
             GROUP BY co.country
-            HAVING customer_count > %s
             ORDER BY customer_count DESC
             LIMIT %s
         """
+        params = [limit]
+        
         with self.connection_factory() as cn, cn.cursor(dictionary=True) as cur:
-            cur.execute(query, (min_customers, limit))
-            return cur.fetchall()
+            cur.execute(sql, params)
+            results = cur.fetchall()
+            # Python'da rank ekle
+            for idx, row in enumerate(results, start=1):
+                row['rank'] = idx
+            return results
 
 class Payments:
     """Data-access helpers for the payment table."""
