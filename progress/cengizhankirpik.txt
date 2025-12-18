@@ -5,3 +5,4 @@ Cengizhan Kırpık's progress
 3- payment.html added to templates
 4- "payment" class and related operations are added to table_operations.py
 5- Payments route added to app.py
+6- Edit payment methods and update data.payment.sql and payment.html
