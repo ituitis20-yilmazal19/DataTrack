@@ -16072,8 +16072,13 @@ SET payment_method = CASE
     -- (Based on Customer ID ending in 2 or 7)
     WHEN customer_id % 5 = 2 THEN 'PayPal'
 
-    -- 6. Default: All other transactions (including old 'Cash' ones) default to 'Credit Card'
-    ELSE 'Credit Card'
+    -- 6. DEFAULT DISTRIBUTION (The Upgrade)
+    -- Instead of defaulting everyone to 'Credit Card', we split them based on ID parity.
+    -- Even IDs -> 'Credit Card', Odd IDs -> 'Debit Card'
+    ELSE CASE 
+        WHEN customer_id % 2 = 0 THEN 'Credit Card' 
+        ELSE 'Debit Card' 
+    END
 END;
 
 -- Re-enable safe update mode (Optional)
