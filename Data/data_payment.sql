@@ -16047,51 +16047,39 @@ INSERT INTO payment (payment_id, customer_id, rental_id, amount, payment_date, l
 (16049, 599, 15725, '2.99', '2005-08-23 11:25:00', '2006-02-15 22:24:13');
 COMMIT;
 
--- First, assign the default value ('Credit Card') to all 16,000+ rows.
-UPDATE payment
-SET payment_method = 'Credit Card'
-WHERE payment_id > 0;
+-- Disable safe update mode to allow mass updates without WHERE keys
+SET SQL_SAFE_UPDATES = 0;
 
--- Small, odd-numbered payments are 'Cash'.
 UPDATE payment
-SET payment_method = 'Cash'
-WHERE amount < 1.99 AND payment_id % 2 = 1; -- (Amount < $1.99 AND odd ID)
+SET payment_method = CASE
+    -- 1. Small, odd-numbered payments are assigned to 'Cash'
+    -- (Priority: High - captures small amounts immediately)
+    WHEN amount < 1.99 AND payment_id % 2 = 1 THEN 'Cash'
 
--- Assign to a large subset of customers (approx. 20% of them).
-UPDATE payment
-SET payment_method = 'Debit Card'
-WHERE customer_id % 5 = 1 -- (Customer ID ends in 1 or 6)
-  AND payment_method = 'Credit Card'; -- (Only change those who are still 'Credit Card')
- 
--- Assign to another subset of customers (approx. 20%).
-UPDATE payment
-SET payment_method = 'PayPal'
-WHERE customer_id % 5 = 2
-  AND payment_method = 'Credit Card';
+    -- 2. Very high-value transactions are assigned to 'Bank Transfer'
+    -- (Condition: Amount > 6.99. This overrides lower priority rules)
+    WHEN amount > 6.99 THEN 'Bank Transfer'
 
--- Assign to very high-value transactions.
-UPDATE payment
-SET payment_method = 'Bank Transfer'
-WHERE amount > 6.99
-  AND payment_method = 'Credit Card';
+    -- 3. Specific 'early adopter' customers with mid-to-high amounts use 'Crypto'
+    -- (Condition: Customer ID > 550 AND Amount > 4.99)
+    -- Note: Since > 6.99 is caught above, this effectively captures 4.99 to 6.99 range.
+    WHEN customer_id > 550 AND amount > 4.99 THEN 'Crypto'
 
--- Assign to mid-to-high value transactions for another customer subset.
-UPDATE payment
-SET payment_method = 'Klarna (BNPL)'
-WHERE amount > 3.99 AND amount < 6.99
-  AND customer_id % 5 = 3
-  AND payment_method = 'Credit Card';
+    -- 4. Mid-to-high value transactions for another subset use 'Klarna (BNPL)'
+    -- (Condition: Amount between 3.99 and 6.99 for specific customers)
+    WHEN amount > 3.99 AND amount < 6.99 AND customer_id % 5 = 3 THEN 'Klarna (BNPL)'
 
--- Assign to rentals processed by a specific staff member (staff_id = 2).
-UPDATE payment
-SET payment_method = 'Prepaid Card'
-WHERE staff_id = 2
-  AND payment_method = 'Credit Card';
+    -- 5. Approx. 20% of customers use 'Debit Card'
+    -- (Based on Customer ID ending in 1 or 6)
+    WHEN customer_id % 5 = 1 THEN 'Debit Card'
 
--- Assign to a very small, specific niche of customers.
-UPDATE payment
-SET payment_method = 'Crypto'
-WHERE customer_id > 550 -- (Our "early adopter" customers)
-  AND amount > 4.99
-  AND payment_method = 'Credit Card';
--- (All other transactions will remain 'Credit Card' by default)
+    -- 6. Approx. 20% of customers use 'PayPal'
+    -- (Based on Customer ID ending in 2 or 7)
+    WHEN customer_id % 5 = 2 THEN 'PayPal'
+
+    -- 7. Default: All other transactions default to 'Credit Card'
+    ELSE 'Credit Card'
+END;
+
+-- Re-enable safe update mode (Optional)
+SET SQL_SAFE_UPDATES = 1;
