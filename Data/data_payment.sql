@@ -16052,32 +16052,28 @@ SET SQL_SAFE_UPDATES = 0;
 
 UPDATE payment
 SET payment_method = CASE
-    -- 1. Small, odd-numbered payments are assigned to 'Cash'
-    -- (Priority: High - captures small amounts immediately)
-    WHEN amount < 1.99 AND payment_id % 2 = 1 THEN 'Cash'
-
-    -- 2. Very high-value transactions are assigned to 'Bank Transfer'
+    -- 1. Very high-value transactions are assigned to 'Bank Transfer'
     -- (Condition: Amount > 6.99. This overrides lower priority rules)
     WHEN amount > 6.99 THEN 'Bank Transfer'
 
-    -- 3. Specific 'early adopter' customers with mid-to-high amounts use 'Crypto'
+    -- 2. Specific 'early adopter' customers with mid-to-high amounts use 'Crypto'
     -- (Condition: Customer ID > 550 AND Amount > 4.99)
     -- Note: Since > 6.99 is caught above, this effectively captures 4.99 to 6.99 range.
     WHEN customer_id > 550 AND amount > 4.99 THEN 'Crypto'
 
-    -- 4. Mid-to-high value transactions for another subset use 'Klarna (BNPL)'
+    -- 3. Mid-to-high value transactions for another subset use 'Klarna (BNPL)'
     -- (Condition: Amount between 3.99 and 6.99 for specific customers)
     WHEN amount > 3.99 AND amount < 6.99 AND customer_id % 5 = 3 THEN 'Klarna (BNPL)'
 
-    -- 5. Approx. 20% of customers use 'Debit Card'
+    -- 4. Approx. 20% of customers use 'Debit Card'
     -- (Based on Customer ID ending in 1 or 6)
     WHEN customer_id % 5 = 1 THEN 'Debit Card'
 
-    -- 6. Approx. 20% of customers use 'PayPal'
+    -- 5. Approx. 20% of customers use 'PayPal'
     -- (Based on Customer ID ending in 2 or 7)
     WHEN customer_id % 5 = 2 THEN 'PayPal'
 
-    -- 7. Default: All other transactions default to 'Credit Card'
+    -- 6. Default: All other transactions default to 'Credit Card'
     ELSE 'Credit Card'
 END;
 
