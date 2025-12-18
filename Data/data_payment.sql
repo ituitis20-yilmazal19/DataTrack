@@ -16058,7 +16058,6 @@ SET payment_method = CASE
 
     -- 2. Specific 'early adopter' customers with mid-to-high amounts use 'Crypto'
     -- (Condition: Customer ID > 550 AND Amount > 4.99)
-    -- Note: Since > 6.99 is caught above, this effectively captures 4.99 to 6.99 range.
     WHEN customer_id > 550 AND amount > 4.99 THEN 'Crypto'
 
     -- 3. Mid-to-high value transactions for another subset use 'Klarna (BNPL)'
@@ -16073,7 +16072,7 @@ SET payment_method = CASE
     -- (Based on Customer ID ending in 2 or 7)
     WHEN customer_id % 5 = 2 THEN 'PayPal'
 
-    -- 6. Default: All other transactions default to 'Credit Card'
+    -- 6. Default: All other transactions (including old 'Cash' ones) default to 'Credit Card'
     ELSE 'Credit Card'
 END;
 
