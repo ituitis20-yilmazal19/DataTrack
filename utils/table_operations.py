@@ -595,49 +595,61 @@ class Payments:
     def __init__(self, connection_factory: Callable[[], mysql.connector.MySQLConnection]):
         self.connection_factory = connection_factory
 
-    def search(self, q=None, payment_method=None, sort_order="desc", page=1, page_size=20):
+    def search(self, q=None, payment_method=None, sort_order="desc", page=1, per_page=10):
         """
-        Search payments with filters (q for amount/ID, payment_method) and pagination.
+        Searches and filters payments based on query, method, and sorting.
+        Now performs a JOIN with the customer table to fetch names.
         """
-        offset = (page - 1) * page_size
-        where = []
+        offset = (page - 1) * per_page
         params = []
+        conditions = []
 
+        # SQL Query: We join 'payment' with 'customer' to access first_name and last_name.
+        sql = """
+            SELECT 
+                p.payment_id, p.customer_id, p.rental_id, 
+                p.amount, p.payment_date, p.last_update, p.payment_method,
+                c.first_name, c.last_name
+            FROM payment p
+            JOIN customer c ON p.customer_id = c.customer_id
+            WHERE 1=1
+        """
+
+        # Search Logic: Filter by ID, Amount, First Name, or Last Name
+        if q:
+            conditions.append("""
+                (CAST(p.payment_id AS CHAR) LIKE %s OR 
+                 CAST(p.amount AS CHAR) LIKE %s OR 
+                 c.first_name LIKE %s OR 
+                 c.last_name LIKE %s)
+            """)
+            term = f"%{q}%"
+            # We pass the search term 4 times for the 4 conditions above
+            params.extend([term, term, term, term])
+
+        # Filter by Payment Method (e.g., 'Credit Card', 'PayPal')
         if payment_method:
-            where.append("payment_method = %s")
+            conditions.append("p.payment_method = %s")
             params.append(payment_method)
 
-        if q:
-            try:
-                clean_q = q.replace(',', '.')
-                val = float(clean_q)
-                
-                where.append("(amount = %s OR customer_id = %s OR payment_id = %s)")
-                params.extend([val, int(val), int(val)])
-            except ValueError:
-                pass
+        # Append conditions to the main SQL query
+        if conditions:
+            sql += " AND " + " AND ".join(conditions)
 
-        where_clause = ("WHERE " + " AND ".join(where)) if where else ""
+        # Sorting Logic: Sort by payment_date
+        order_dir = "ASC" if sort_order == "asc" else "DESC"
+        sql += f" ORDER BY p.payment_date {order_dir}"
 
-        if sort_order == "asc":
-            order_clause = "ORDER BY payment_date ASC"
-        else:
-            order_clause = "ORDER BY payment_date DESC"
+        # Pagination: Limit the number of results per page
+        sql += " LIMIT %s OFFSET %s"
+        params.extend([per_page, offset])
 
-        sql = f"""
-            SELECT 
-                payment_id, customer_id, rental_id, 
-                amount, payment_date, last_update, payment_method
-            FROM payment
-            {where_clause}
-            {order_clause}
-            LIMIT %s OFFSET %s
-        """
-        params.extend([page_size, offset])
-
-        with self.connection_factory() as conn, conn.cursor(dictionary=True) as cur:
+        # Execute the query
+        with self.connection_factory() as cn, cn.cursor(dictionary=True) as cur:
             cur.execute(sql, params)
-            return cur.fetchall()
+            rows = cur.fetchall()
+        
+        return rows
 
     def get(self, payment_id: int):
         """Get a single payment detail."""
