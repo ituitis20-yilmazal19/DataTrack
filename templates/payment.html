@@ -53,10 +53,10 @@
           
           <td>
             <a href="#" class="text-decoration-none fw-bold text-dark">
-                Customer #{{ p.customer_id }}
+                {{ p.first_name }} {{ p.last_name }}
             </a>
+            <div class="small text-muted">ID: {{ p.customer_id }}</div>
           </td>
-          
           <td class="text-success fw-bold">${{ p.amount }}</td>
           
           <td class="text-muted small">{{ p.payment_date }}</td>
