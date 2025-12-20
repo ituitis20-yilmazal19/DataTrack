@@ -327,15 +327,37 @@ def customers_top():
 # --- PAYMENTS ---
 @app.route("/payments")
 def payments_list():
+   @app.route("/payments")
+def payments_list():
     q = request.args.get("q", type=str)
     payment_method = request.args.get("payment_method", type=str)
     sort_order = request.args.get("sort_order", default="desc", type=str)
-    page = max(request.args.get("page", default=1, type=int), 1)
-
-    rows = payments.search(q=q, payment_method=payment_method, sort_order=sort_order, page=page)
     
-    return render_template("payment.html", payments=rows, q=q, 
-                           sel_method=payment_method, sel_sort=sort_order, page=page)
+    page = max(request.args.get("page", default=1, type=int), 1)
+    
+    per_page = 10 
+
+    rows, total_count = payments.search(
+        q=q, 
+        payment_method=payment_method, 
+        sort_order=sort_order, 
+        page=page, 
+        per_page=per_page
+    )
+    
+    total_pages = math.ceil(total_count / per_page)
+    if total_pages == 0:
+        total_pages = 1
+
+    return render_template(
+        "payment.html", 
+        payments=rows, 
+        q=q, 
+        sel_method=payment_method, 
+        sel_sort=sort_order, 
+        page=page, 
+        total_pages=total_pages
+    )
     
 @app.route('/payments/edit/<int:payment_id>', methods=['GET', 'POST'])
 def edit_payment(payment_id):
