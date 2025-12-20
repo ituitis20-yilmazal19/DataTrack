@@ -339,37 +339,31 @@ def payments_list():
     
 @app.route('/payments/edit/<int:payment_id>', methods=['GET', 'POST'])
 def edit_payment(payment_id):
-    # --- POST REQUEST (WHEN THE SAVE BUTTON IS CLICKED) ---
+    # --- POST REQUEST ---
     if request.method == 'POST':
         try:
-            # Collect form data and send it to the update function
-            # We use the 'payments' object defined in your project
             payments.update_payment(payment_id, request.form)
-            
-            # Redirect back to the payments list after saving
             return redirect(url_for('payments_list')) 
         except Exception as e:
             return f"An error occurred: {e}"
 
-    # --- GET REQUEST (WHEN THE PAGE FIRST LOADS) ---
+    # --- GET REQUEST ---
     try:
-        # Fetch necessary data from the database using your 'payments' object
-        payment, customers, staff_members = payments.get_payment_details(payment_id)
+        # We only unpack 2 values now (payment and customers)
+        payment, customers = payments.get_payment_details(payment_id)
         
-        # If no payment is found with that ID, return a 404 error
         if not payment:
             return "Payment not found", 404
 
-        # Render the HTML template with the fetched data
+        # Render without staff_members
         return render_template(
             'payments_edit.html', 
             payment=payment, 
-            customers=customers, 
-            staff_members=staff_members
+            customers=customers
         )
     except Exception as e:
         return f"Error fetching data: {e}"
-
+        
 # --- RENTALS ---
 @app.route("/rentals")
 def rentals_list():
