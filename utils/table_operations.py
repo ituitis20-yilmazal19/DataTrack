@@ -647,6 +647,56 @@ class Payments:
             row = cur.fetchone()
             return row
 
+    def get_payment_details(self, payment_id):
+        """
+        Fetches a single payment record, the full customer list, 
+        and the full staff list for the edit page dropdowns.
+        """
+        with self.connection_factory() as cn, cn.cursor(dictionary=True) as cur:
+            # 1. Fetch the specific payment record
+            cur.execute("SELECT * FROM payment WHERE payment_id = %s", (payment_id,))
+            payment = cur.fetchone()
+
+            # 2. Fetch all customers for the dropdown (Concatenate First and Last Name)
+            cur.execute("SELECT customer_id, CONCAT(first_name, ' ', last_name) as full_name FROM customer ORDER BY first_name")
+            customers = cur.fetchall()
+
+            # 3. Fetch all staff members for the dropdown
+            cur.execute("SELECT staff_id, CONCAT(first_name, ' ', last_name) as full_name FROM staff ORDER BY first_name")
+            staff_members = cur.fetchall()
+
+            return payment, customers, staff_members
+
+    def update_payment(self, payment_id, data):
+        """
+        Updates the payment record using the data received from the form.
+        """
+        sql = """
+            UPDATE payment 
+            SET customer_id = %s,
+                staff_id = %s,
+                amount = %s,
+                payment_date = %s,
+                payment_method = %s
+            WHERE payment_id = %s
+        """
+        
+        # Replace 'T' with a space in the date string (Fix for HTML datetime-local format)
+        clean_date = data['payment_date'].replace('T', ' ')
+
+        params = (
+            data['customer_id'],
+            data['staff_id'],
+            data['amount'],
+            clean_date,
+            data['payment_method'],
+            payment_id
+        )
+
+        with self.connection_factory() as cn, cn.cursor() as cur:
+            cur.execute(sql, params)
+            cn.commit()
+
 class Rentals:
     """Data-access helpers for the rental table."""
     def __init__(self, connection_factory: Callable[[], mysql.connector.MySQLConnection]):
