@@ -4,3 +4,4 @@ Alperen Yılmaz's progress
 1- sakila "customer" table data file added to Data folder
 2- Added Customers DAO to table_operations.py
 3- Added /customers, /customers/search and /customers/top routes in app.py
+4-Added customers top spenders feature and unified page looks on UI
