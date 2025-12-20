@@ -597,25 +597,23 @@ class Payments:
 
     def search(self, q=None, payment_method=None, sort_order="desc", page=1, per_page=10):
         """
-        Searches and filters payments based on query, method, and sorting.
-        Now performs a JOIN with the customer table to fetch names.
+        Searches payments and returns both the results (rows) AND the total count.
         """
         offset = (page - 1) * per_page
         params = []
         conditions = []
 
-        # SQL Query: We join 'payment' with 'customer' to access first_name and last_name.
-        sql = """
-            SELECT 
-                p.payment_id, p.customer_id, p.rental_id, 
-                p.amount, p.payment_date, p.last_update, p.payment_method,
-                c.first_name, c.last_name
+        # --- PART 1: Build the WHERE Clause ---
+        # We build the conditions once so we can use them for both counting and fetching data.
+        
+        # Base query part
+        base_query = """
             FROM payment p
             JOIN customer c ON p.customer_id = c.customer_id
             WHERE 1=1
         """
 
-        # Search Logic: Filter by ID, Amount, First Name, or Last Name
+        # Search Conditions
         if q:
             conditions.append("""
                 (CAST(p.payment_id AS CHAR) LIKE %s OR 
@@ -624,32 +622,52 @@ class Payments:
                  c.last_name LIKE %s)
             """)
             term = f"%{q}%"
-            # We pass the search term 4 times for the 4 conditions above
             params.extend([term, term, term, term])
 
-        # Filter by Payment Method (e.g., 'Credit Card', 'PayPal')
+        # Filter Conditions
         if payment_method:
             conditions.append("p.payment_method = %s")
             params.append(payment_method)
 
-        # Append conditions to the main SQL query
+        # Add conditions to base query
         if conditions:
-            sql += " AND " + " AND ".join(conditions)
+            base_query += " AND " + " AND ".join(conditions)
 
-        # Sorting Logic: Sort by payment_date
+        # --- PART 2: Get Total Count ---
+        # We need to know the total number of matching records to calculate total pages.
+        count_sql = "SELECT COUNT(*) as total " + base_query
+        
+        # --- PART 3: Get the Data ---
+        data_sql = """
+            SELECT 
+                p.payment_id, p.customer_id, p.rental_id, 
+                p.amount, p.payment_date, p.last_update, p.payment_method,
+                c.first_name, c.last_name
+        """ + base_query
+
+        # Sorting
         order_dir = "ASC" if sort_order == "asc" else "DESC"
-        sql += f" ORDER BY p.payment_date {order_dir}"
+        data_sql += f" ORDER BY p.payment_date {order_dir}"
 
-        # Pagination: Limit the number of results per page
-        sql += " LIMIT %s OFFSET %s"
-        params.extend([per_page, offset])
+        # Pagination
+        data_sql += " LIMIT %s OFFSET %s"
+        # We need a copy of params for the data query because we append limit/offset
+        data_params = params.copy() 
+        data_params.extend([per_page, offset])
 
-        # Execute the query
         with self.connection_factory() as cn, cn.cursor(dictionary=True) as cur:
-            cur.execute(sql, params)
+            # 1. Run Count Query
+            # Note: For COUNT, we use 'params' (without limit/offset)
+            # We use a non-dictionary cursor for count usually, but dictionary works too (returns {'total': 123})
+            cur.execute(count_sql, params)
+            total_count = cur.fetchone()['total']
+
+            # 2. Run Data Query
+            cur.execute(data_sql, data_params)
             rows = cur.fetchall()
         
-        return rows
+        # Return both the rows and the total count
+        return rows, total_count
 
     def get(self, payment_id: int):
         """Get a single payment detail."""
