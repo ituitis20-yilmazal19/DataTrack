@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Payment{% endblock %}
+
+{% block content %}
+<h1 class="h3 mb-4 text-gray-800">Edit Payment</h1>
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Payment Details (ID: {{ payment.payment_id }})</h6>
+    </div>
+    <div class="card-body">
+        <form method="POST">
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="customer_id" class="form-label fw-bold">Customer</label>
+                    <select class="form-select" id="customer_id" name="customer_id" required>
+                        <option value="">Select a customer...</option>
+                        {% for customer in customers %}
+                            <option value="{{ customer.customer_id }}" 
+                                    {{ 'selected' if customer.customer_id == payment.customer_id else '' }}>
+                                {{ customer.full_name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label for="staff_id" class="form-label fw-bold">Staff Member</label>
+                    <select class="form-select" id="staff_id" name="staff_id" required>
+                        {% for staff in staff_members %}
+                            <option value="{{ staff.staff_id }}"
+                                    {{ 'selected' if staff.staff_id == payment.staff_id else '' }}>
+                                {{ staff.full_name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label for="amount" class="form-label fw-bold">Amount ($)</label>
+                    <input type="number" class="form-control" id="amount" name="amount" step="0.01" value="{{ payment.amount }}" required>
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label for="payment_date" class="form-label fw-bold">Payment Date</label>
+                    <input type="datetime-local" class="form-control" id="payment_date" name="payment_date" 
+                           value="{{ payment.payment_date.strftime('%Y-%m-%dT%H:%M') }}" required>
+                </div>
+                
+                <div class="col-md-4 mb-3">
+                    <label for="payment_method" class="form-label fw-bold">Payment Method</label>
+                    <select class="form-select" id="payment_method" name="payment_method" required>
+                        {% set current_method = payment.payment_method %}
+                        
+                        <option value="Credit Card" {{ 'selected' if current_method == 'Credit Card' else '' }}>Credit Card</option>
+                        <option value="Debit Card" {{ 'selected' if current_method == 'Debit Card' else '' }}>Debit Card</option>
+                        <option value="PayPal" {{ 'selected' if current_method == 'PayPal' else '' }}>PayPal</option>
+                        <option value="Bank Transfer" {{ 'selected' if current_method == 'Bank Transfer' else '' }}>Bank Transfer</option>
+                        <option value="Crypto" {{ 'selected' if current_method == 'Crypto' else '' }}>Crypto</option>
+                        <option value="Klarna (BNPL)" {{ 'selected' if current_method == 'Klarna (BNPL)' else '' }}>Klarna (BNPL)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="mt-4 d-flex justify-content-between">
+                <div>
+                    <button type="submit" class="btn btn-primary me-2">Save Changes</button>
+                    <a href="{{ url_for('payments_list') }}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </div>
+
+        </form>
+        </div>
+</div>
+
+{% endblock %}
