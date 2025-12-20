@@ -1,7 +1,87 @@
 {% extends "base.html" %}
-{% block title %}Main{% endblock %}
+{% block title %}Admin Panel{% endblock %}
+
+{% block navbar %}{% endblock %}
 
 {% block content %}
-<h1>Main Page</h1>
-<p>Select a section from the navigation bar.</p>
+<div class="text-center mb-5">
+  <h1>Welcome to Admin Panel</h1>
+</div>
+
+<div class="d-flex flex-column align-items-center gap-4">
+  <div class="row g-4 justify-content-center w-100">
+    <div class="col-auto">
+      <a href="{{ url_for('films_list') }}" class="btn square-btn d-flex flex-column align-items-center justify-content-center">
+        <i class="bi bi-film fs-1 mb-2 text-white"></i>
+        <span class="text-white fs-5">Films</span>
+        <small class="text-white-50 mt-2 fw-bold">Browse and manage movies</small>
+      </a>
+    </div>
+    
+    <div class="col-auto">
+      <a href="{{ url_for('address') }}" class="btn square-btn d-flex flex-column align-items-center justify-content-center">
+        <i class="bi bi-geo-alt fs-1 mb-2 text-white"></i>
+        <span class="text-white fs-5">Address</span>
+        <small class="text-white-50 mt-2 fw-bold">Manage customer addresses</small>
+      </a>
+    </div>
+    
+    <div class="col-auto">
+      <a href="{{ url_for('customers_list') }}" class="btn square-btn d-flex flex-column align-items-center justify-content-center">
+        <i class="bi bi-people fs-1 mb-2 text-white"></i>
+        <span class="text-white fs-5">Customers</span>
+        <small class="text-white-50 mt-2 fw-bold">View customer records</small>
+      </a>
+    </div>
+  </div>
+  
+  <div class="row g-4 justify-content-center w-100">
+    <div class="col-auto">
+      <a href="{{ url_for('payments_list') }}" class="btn square-btn d-flex flex-column align-items-center justify-content-center">
+        <i class="bi bi-credit-card fs-1 mb-2 text-white"></i>
+        <span class="text-white fs-5">Payments</span>
+        <small class="text-white-50 mt-2 fw-bold">Track payment history</small>
+      </a>
+    </div>
+    
+    <div class="col-auto">
+      <a href="{{ url_for('rentals_list') }}" class="btn square-btn d-flex flex-column align-items-center justify-content-center">
+        <i class="bi bi-calendar-check fs-1 mb-2 text-white"></i>
+        <span class="text-white fs-5">Rentals</span>
+        <small class="text-white-50 mt-2 fw-bold">Manage rental orders</small>
+      </a>
+    </div>
+  </div>
+</div>
+
+<style>
+.square-btn {
+  width: 320px;
+  height: 320px;
+  border-radius: 16px;
+  background-color: #4f46e5;
+  border: none;
+  box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3);
+  transition: all 0.3s ease;
+}
+
+.square-btn:hover {
+  background-color: #4338ca;
+  transform: translateY(-4px);
+  box-shadow: 0 20px 25px -5px rgba(79, 70, 229, 0.4);
+}
+
+.square-btn i {
+  font-size: 4rem !important;
+}
+
+.square-btn span {
+  font-size: 1.5rem !important;
+  font-weight: 600;
+}
+
+.square-btn small {
+  font-size: 0.95rem !important;
+}
+</style>
 {% endblock %}
