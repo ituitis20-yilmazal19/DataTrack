@@ -353,6 +353,50 @@ class Customers:
         with self.connection_factory() as conn, conn.cursor(dictionary=True) as cur:
             cur.execute(query, (limit,))
             return cur.fetchall()
+        
+    def count_search(self, q: str = None) -> int:
+        where = []
+        params = []
+
+        if q:
+            like_q = f"%{q}%"
+            where.append("(c.first_name LIKE %s OR c.last_name LIKE %s OR c.email LIKE %s)")
+            params.extend([like_q, like_q, like_q])
+
+        where_clause = ("WHERE " + " AND ".join(where)) if where else ""
+
+        sql = f"SELECT COUNT(*) FROM customer c {where_clause}"
+        with self.connection_factory() as conn, conn.cursor() as cur:
+            cur.execute(sql, params)
+            (n,) = cur.fetchone()
+            return int(n)
+        
+    def top_spenders(self, limit: int = 20):
+        sql = """
+        SELECT c.customer_id,
+            CONCAT(c.first_name,' ',c.last_name) AS customer_name,
+            c.email,
+            ci.city,
+            co.country,
+            totals.total_paid,
+            totals.payments_count
+        FROM customer c
+        JOIN address a  ON a.address_id = c.address_id
+        JOIN city ci    ON ci.city_id = a.city_id
+        JOIN country co ON co.country_id = ci.country_id
+        JOIN (
+        SELECT customer_id,
+                SUM(amount) AS total_paid,
+                COUNT(*)    AS payments_count
+        FROM payment
+        GROUP BY customer_id
+        ) totals ON totals.customer_id = c.customer_id
+        ORDER BY totals.total_paid DESC
+        LIMIT %s
+        """
+        with self.connection_factory() as conn, conn.cursor(dictionary=True) as cur:
+            cur.execute(sql, (limit,))
+            return cur.fetchall()
 
 
 class Addresses:

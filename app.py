@@ -253,16 +253,22 @@ def address_add():
     cities = addresses.get_cities()
     return render_template("address_add.html", cities=cities)
 
-# --- CUSTOMERS (Düzeltilmiş) ---
+# --- CUSTOMERS  ---
+@app.route("/customers")
 @app.route("/customers")
 def customers_list():
     q = request.args.get("q", type=str)
     page = max(request.args.get("page", default=1, type=int), 1)
-    
-    # Hata Düzeltildi: 'limit' yerine 'page_size' kullanılıyor
-    rows = customers.list_customers(q=q, page=page, page_size=20)
-    
-    return render_template("customers.html", customers=rows, q=q, page=page)
+    page_size = 20
+
+    rows = customers.list_customers(q=q, page=page, page_size=page_size)
+    total_count = customers.count_search(q=q)
+    total_pages = math.ceil(total_count / page_size)
+
+    return render_template("customers.html",
+                           customers=rows, q=q, page=page,
+                           total_pages=total_pages)
+
 
 @app.route("/customer/add", methods=["GET", "POST"])
 def customer_add():
@@ -323,6 +329,11 @@ def customer_delete(customer_id):
 def customers_top():
     rows = customers.top_customers_by_payment()
     return render_template("customers_top.html", customers=rows)
+@app.route("/customers/top-spenders")
+def customers_top_spenders():
+    limit = request.args.get("limit", default=20, type=int)
+    rows = customers.top_spenders(limit=limit)
+    return render_template("customers_top_spenders.html", rows=rows, limit=limit)
 
 # --- PAYMENTS ---
 @app.route("/payments")
