@@ -327,14 +327,19 @@ def customers_top():
 # --- PAYMENTS ---
 @app.route("/payments")
 def payments_list():
+    # 1. Get query parameters from the URL
     q = request.args.get("q", type=str)
     payment_method = request.args.get("payment_method", type=str)
     sort_order = request.args.get("sort_order", default="desc", type=str)
     
+    # Get the current page number (default is 1). Ensure it's at least 1.
     page = max(request.args.get("page", default=1, type=int), 1)
     
-    per_page = 10 
+    # --- DEĞİŞİKLİK BURADA YAPILDI ---
+    # Define how many items to show per page (Updated to 20 to match friends' projects)
+    per_page = 20 
 
+    # 2. Call the search function
     rows, total_count = payments.search(
         q=q, 
         payment_method=payment_method, 
@@ -343,10 +348,12 @@ def payments_list():
         per_page=per_page
     )
     
+    # 3. Calculate Total Pages
     total_pages = math.ceil(total_count / per_page)
     if total_pages == 0:
         total_pages = 1
 
+    # 4. Render the template
     return render_template(
         "payment.html", 
         payments=rows, 
