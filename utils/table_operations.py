@@ -649,44 +649,40 @@ class Payments:
 
     def get_payment_details(self, payment_id):
         """
-        Fetches a single payment record, the full customer list, 
-        and the full staff list for the edit page dropdowns.
+        Fetches payment and customers. 
+        REMOVED: Staff fetching (since table doesn't exist).
         """
         with self.connection_factory() as cn, cn.cursor(dictionary=True) as cur:
             # 1. Fetch the specific payment record
             cur.execute("SELECT * FROM payment WHERE payment_id = %s", (payment_id,))
             payment = cur.fetchone()
 
-            # 2. Fetch all customers for the dropdown (Concatenate First and Last Name)
+            # 2. Fetch all customers for the dropdown
             cur.execute("SELECT customer_id, CONCAT(first_name, ' ', last_name) as full_name FROM customer ORDER BY first_name")
             customers = cur.fetchall()
 
-            # 3. Fetch all staff members for the dropdown
-            cur.execute("SELECT staff_id, CONCAT(first_name, ' ', last_name) as full_name FROM staff ORDER BY first_name")
-            staff_members = cur.fetchall()
-
-            return payment, customers, staff_members
+            # 3. Staff removed entirely
+            return payment, customers
 
     def update_payment(self, payment_id, data):
         """
-        Updates the payment record using the data received from the form.
+        Updates the payment record.
+        REMOVED: staff_id update.
         """
         sql = """
             UPDATE payment 
             SET customer_id = %s,
-                staff_id = %s,
                 amount = %s,
                 payment_date = %s,
                 payment_method = %s
             WHERE payment_id = %s
         """
         
-        # Replace 'T' with a space in the date string (Fix for HTML datetime-local format)
         clean_date = data['payment_date'].replace('T', ' ')
 
         params = (
             data['customer_id'],
-            data['staff_id'],
+            # staff_id removed here
             data['amount'],
             clean_date,
             data['payment_method'],
