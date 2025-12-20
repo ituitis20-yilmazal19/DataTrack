@@ -327,8 +327,6 @@ def customers_top():
 # --- PAYMENTS ---
 @app.route("/payments")
 def payments_list():
-   @app.route("/payments")
-def payments_list():
     q = request.args.get("q", type=str)
     payment_method = request.args.get("payment_method", type=str)
     sort_order = request.args.get("sort_order", default="desc", type=str)
