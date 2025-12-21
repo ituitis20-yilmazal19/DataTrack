@@ -662,13 +662,13 @@ class Addresses:
         """
         sql = """
             SELECT 
-                COUNT(*) AS customer_count, 
-                co.country
-            FROM address a
-            JOIN city c ON a.city_id = c.city_id
-            JOIN country co ON c.country_id = co.country_id
-            JOIN customer cus ON a.address_id = cus.address_id
-            GROUP BY co.country
+                co.country,
+                COUNT(DISTINCT c.customer_id) AS customer_count
+            FROM country co
+            JOIN city ci ON ci.country_id = co.country_id
+            JOIN address a ON a.city_id = ci.city_id
+            JOIN customer c ON c.address_id = a.address_id
+            GROUP BY co.country_id, co.country
             ORDER BY customer_count DESC
             LIMIT %s
         """
@@ -678,6 +678,33 @@ class Addresses:
             cur.execute(sql, params)
             results = cur.fetchall()
             # Python'da rank ekle
+            for idx, row in enumerate(results, start=1):
+                row['rank'] = idx
+            return results
+
+    def top_countries_by_spending(self, limit: int = 20):
+        """
+        Top countries by total payment amount.
+        Returns: rank, country, total_spent
+        """
+        sql = """
+            SELECT 
+                co.country,
+                SUM(p.amount) AS total_spent
+            FROM country co
+            JOIN city ci ON ci.country_id = co.country_id
+            JOIN address a ON a.city_id = ci.city_id
+            JOIN customer c ON c.address_id = a.address_id
+            JOIN payment p ON p.customer_id = c.customer_id
+            GROUP BY co.country_id, co.country
+            ORDER BY total_spent DESC
+            LIMIT %s
+        """
+        params = [limit]
+
+        with self.connection_factory() as cn, cn.cursor(dictionary=True) as cur:
+            cur.execute(sql, params)
+            results = cur.fetchall()
             for idx, row in enumerate(results, start=1):
                 row['rank'] = idx
             return results

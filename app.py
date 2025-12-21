@@ -199,7 +199,8 @@ def address():
 @app.route("/address/top-countries")
 def address_top_countries():
     rows = addresses.top_countries_by_customers()
-    return render_template("address_top_countries.html", rows=rows)
+    spending_rows = addresses.top_countries_by_spending()
+    return render_template("address_top_countries.html", rows=rows, spending_rows=spending_rows)
 
 @app.route("/address/<int:address_id>", methods=["GET", "POST"])
 def address_detail(address_id):
