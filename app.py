@@ -433,6 +433,19 @@ def add_payment():
         return render_template('payments_add.html', customers=customers)
     except Exception as e:
         return f"Error loading page: {e}"
+
+@app.route('/payments/analytics')
+def payments_analytics():
+    try:
+        # Get data from the complex queries
+        top_countries, monthly_revenue, method_stats = payments.get_analytics()
+        
+        return render_template('payments_analytics.html', 
+                               top_countries=top_countries, 
+                               monthly_revenue=monthly_revenue, 
+                               method_stats=method_stats)
+    except Exception as e:
+        return f"Error loading analytics: {e}"
         
 # --- RENTALS ---
 @app.route("/rentals")
