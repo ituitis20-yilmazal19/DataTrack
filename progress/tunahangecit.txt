@@ -11,3 +11,4 @@ tunahangecit's progress
 9- Top countries with customer count complex query and next page functionality added
 10- Top countries page made functional, some little changes made on address, address edit and address add pages for accordance to other pages UI
 11- Main page changed for better UI and routes added to 5 main buttons
+12- "Top countries by spending" complex query table made
