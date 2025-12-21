@@ -816,6 +816,50 @@ class Payments:
             cur.execute(sql, params)
             cn.commit()
 
+    def delete_payment(self, payment_id):
+        """
+        Deletes a payment record based on the provided payment ID.
+        """
+        sql = "DELETE FROM payment WHERE payment_id = %s"
+        
+        with self.connection_factory() as cn, cn.cursor() as cur:
+            cur.execute(sql, (payment_id,))
+            cn.commit()
+
+    def get_all_customers(self):
+        """
+        Fetches all customers to populate the dropdown menu in the Add Page.
+        """
+        sql = "SELECT customer_id, CONCAT(first_name, ' ', last_name) as full_name FROM customer ORDER BY first_name"
+        
+        with self.connection_factory() as cn, cn.cursor(dictionary=True) as cur:
+            cur.execute(sql)
+            return cur.fetchall()
+
+    def add_payment(self, data):
+        """
+        Inserts a new payment record into the database.
+        Note: We set staff_id to 1 and rental_id to NULL by default.
+        """
+        sql = """
+            INSERT INTO payment (customer_id, staff_id, rental_id, amount, payment_date, payment_method) 
+            VALUES (%s, 1, NULL, %s, %s, %s)
+        """
+        
+        # Date fix for HTML datetime-local input
+        clean_date = data['payment_date'].replace('T', ' ')
+
+        params = (
+            data['customer_id'],
+            data['amount'],
+            clean_date,
+            data['payment_method']
+        )
+
+        with self.connection_factory() as cn, cn.cursor() as cur:
+            cur.execute(sql, params)
+            cn.commit()
+
 class Rentals:
     """Data-access helpers for the rental table."""
     def __init__(self, connection_factory: Callable[[], mysql.connector.MySQLConnection]):
