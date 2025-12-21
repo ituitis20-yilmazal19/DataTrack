@@ -23,8 +23,8 @@
         <input class="form-control" name="address2" value="{{ address.address2 or '' }}">
       </div>
       <div class="col-md-6">
-        <label class="form-label">District</label>
-        <input class="form-control" name="district" value="{{ address.district }}">
+        <label class="form-label">District *</label>
+        <input class="form-control" name="district" value="{{ address.district }}" required>
       </div>
       <div class="col-md-6">
         <label class="form-label">Postal Code</label>
@@ -46,8 +46,8 @@
         <input class="form-control" value="{{ address.country }}" disabled>
       </div>
       <div class="col-md-6">
-        <label class="form-label">Phone</label>
-        <input class="form-control" name="phone" value="{{ address.phone }}">
+        <label class="form-label">Phone *</label>
+        <input class="form-control" name="phone" value="{{ address.phone }}" required>
       </div>
       <div class="col-12">
         <small class="text-muted">* Required fields</small>
