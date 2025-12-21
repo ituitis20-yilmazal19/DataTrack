@@ -5,3 +5,5 @@ yunusdogru's progress
 3_ created `rentals.html` and `rental_add.html` and updated `base.html` under templates
 4_ implemented "Rentals" class and created "search, "add" and "return_film" methods in `table_operations.py`
 5_ Integrated rental routes into the main `app.py`.
+6_ Update and delete operations have been added.
+7_ A top rented list has been created.
