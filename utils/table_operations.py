@@ -887,7 +887,7 @@ class Payments:
             cur.execute(sql, params)
             cn.commit()
 
-   def get_analytics(self):
+    def get_analytics(self):
         """
         Runs queries for the analytics dashboard.
         Returns: Monthly Revenue and Payment Method Stats.
