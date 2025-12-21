@@ -767,6 +767,16 @@ class Payments:
             cur.execute(sql, params)
             cn.commit()
 
+    def delete_payment(self, payment_id):
+        """
+        Deletes a payment record based on the provided payment ID.
+        """
+        sql = "DELETE FROM payment WHERE payment_id = %s"
+        
+        with self.connection_factory() as cn, cn.cursor() as cur:
+            cur.execute(sql, (payment_id,))
+            cn.commit()
+
 class Rentals:
     """Data-access helpers for the rental table."""
     def __init__(self, connection_factory: Callable[[], mysql.connector.MySQLConnection]):
