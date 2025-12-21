@@ -12,93 +12,64 @@
 
 <div class="row">
 
-    <div class="col-lg-4 mb-4">
+    <div class="col-lg-6 mb-4">
         <div class="card shadow border-0 h-100">
             <div class="card-body">
-                <h5 class="card-title fw-bold mb-4">Top Revenue by Category</h5>
+                <h5 class="card-title fw-bold mb-4">Monthly Revenue Trends</h5>
                 
-                <table class="table table-borderless table-sm">
-                    <thead class="text-muted small text-uppercase">
-                        <tr>
-                            <th>Rank</th>
-                            <th>Category</th>
-                            <th class="text-end">Total</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for item in top_categories %}
-                        <tr class="align-middle">
-                            <td class="fw-bold text-primary">{{ loop.index }}</td>
-                            
-                            <td>
-                                <span class="badge bg-light text-dark border">
-                                    {{ item.category_name }}
-                                </span>
-                            </td>
-                            
-                            <td class="text-end fw-bold">${{ item.total_sales }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="table table-borderless table-hover align-middle">
+                        <thead class="text-muted small text-uppercase bg-light">
+                            <tr>
+                                <th class="ps-3">Month</th>
+                                <th class="text-end pe-3">Total Revenue</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in monthly_revenue %}
+                            <tr>
+                                <td class="ps-3 fw-bold text-dark">{{ item.month_year }}</td>
+                                <td class="text-end pe-3 fw-bold text-success">
+                                    + ${{ item.total }}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="col-lg-4 mb-4">
+    <div class="col-lg-6 mb-4">
         <div class="card shadow border-0 h-100">
             <div class="card-body">
-                <h5 class="card-title fw-bold mb-4">Monthly Revenue</h5>
+                <h5 class="card-title fw-bold mb-4">Payment Methods Stats</h5>
                 
-                <table class="table table-borderless table-sm">
-                    <thead class="text-muted small text-uppercase">
-                        <tr>
-                            <th>Month</th>
-                            <th class="text-end">Revenue</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for item in monthly_revenue %}
-                        <tr class="align-middle">
-                            <td>{{ item.month_year }}</td>
-                            <td class="text-end fw-bold text-success">
-                                + ${{ item.total }}
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-lg-4 mb-4">
-        <div class="card shadow border-0 h-100">
-            <div class="card-body">
-                <h5 class="card-title fw-bold mb-4">Payment Methods</h5>
-                
-                <table class="table table-borderless table-sm">
-                    <thead class="text-muted small text-uppercase">
-                        <tr>
-                            <th>Method</th>
-                            <th class="text-end">Trans.</th>
-                            <th class="text-end">Total</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for item in method_stats %}
-                        <tr class="align-middle">
-                            <td>
-                                <span class="badge bg-light text-dark border">
-                                    {{ item.payment_method }}
-                                </span>
-                            </td>
-                            <td class="text-end text-muted small">{{ item.usage_count }}</td>
-                            <td class="text-end fw-bold">${{ item.total }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="table table-borderless table-hover align-middle">
+                        <thead class="text-muted small text-uppercase bg-light">
+                            <tr>
+                                <th class="ps-3">Method</th>
+                                <th class="text-center">Transactions</th>
+                                <th class="text-end pe-3">Total Volume</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in method_stats %}
+                            <tr>
+                                <td class="ps-3">
+                                    <span class="badge bg-light text-dark border px-3 py-2">
+                                        {{ item.payment_method }}
+                                    </span>
+                                </td>
+                                <td class="text-center text-muted small">{{ item.usage_count }} txns</td>
+                                <td class="text-end pe-3 fw-bold text-primary">${{ item.total }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
