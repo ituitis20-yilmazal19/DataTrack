@@ -410,6 +410,24 @@ def delete_payment_route(payment_id):
         return redirect(url_for('payments_list'))
     except Exception as e:
         return f"Error deleting payment: {e}"
+
+@app.route('/payments/add', methods=['GET', 'POST'])
+def add_payment():
+    # --- POST REQUEST (Save Button Clicked) ---
+    if request.method == 'POST':
+        try:
+            payments.add_payment(request.form)
+            return redirect(url_for('payments_list'))
+        except Exception as e:
+            return f"Error adding payment: {e}"
+
+    # --- GET REQUEST (Show Form) ---
+    try:
+        # We need the customer list for the dropdown menu
+        customers = payments.get_all_customers()
+        return render_template('payments_add.html', customers=customers)
+    except Exception as e:
+        return f"Error loading page: {e}"
         
 # --- RENTALS ---
 @app.route("/rentals")
