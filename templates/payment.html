@@ -121,7 +121,7 @@
         <ul class="pagination mb-0 shadow-sm">
             
             <li class="page-item {{ 'disabled' if page == 1 else '' }}">
-                <a class="page-link border-secondary text-secondary fw-bold"
+                <a class="page-link fw-bold"
                    style="border-radius: 0 !important;"
                    href="{{ url_for('payments_list', page=page-1, q=q, payment_method=sel_method, sort_order=sel_sort) }}">
                     &laquo; Previous
@@ -129,14 +129,14 @@
             </li>
 
             <li class="page-item disabled">
-                 <span class="page-link border-secondary text-dark fw-bold bg-light"
+                 <span class="page-link text-dark fw-bold bg-light"
                        style="border-radius: 0 !important; opacity: 1;">
                      Page {{ page }} of {{ total_pages }}
                  </span>
             </li>
 
             <li class="page-item {{ 'disabled' if page == total_pages else '' }}">
-                <a class="page-link border-secondary text-secondary fw-bold"
+                <a class="page-link fw-bold"
                    style="border-radius: 0 !important;"
                    href="{{ url_for('payments_list', page=page+1, q=q, payment_method=sel_method, sort_order=sel_sort) }}">
                     Next &raquo;
