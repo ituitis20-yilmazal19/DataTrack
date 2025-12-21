@@ -887,31 +887,14 @@ class Payments:
             cur.execute(sql, params)
             cn.commit()
 
-    def get_analytics(self):
+   def get_analytics(self):
         """
-        Runs complex queries to generate analytics data for the dashboard.
+        Runs queries for the analytics dashboard.
+        Returns: Monthly Revenue and Payment Method Stats.
         """
         with self.connection_factory() as cn, cn.cursor(dictionary=True) as cur:
             
-            # 1. COMPLEX QUERY: Total Revenue by Film Category
-            # We need to join 5 tables to link a payment to a film category:
-            # Payment -> Rental -> Inventory -> Film_Category -> Category
-            sql_category = """
-                SELECT c.name as category_name, SUM(p.amount) as total_sales
-                FROM payment p
-                JOIN rental r ON p.rental_id = r.rental_id
-                JOIN inventory i ON r.inventory_id = i.inventory_id
-                JOIN film_category fc ON i.film_id = fc.film_id
-                JOIN category c ON fc.category_id = c.category_id
-                GROUP BY c.name
-                ORDER BY total_sales DESC
-                LIMIT 10
-            """
-            cur.execute(sql_category)
-            top_categories = cur.fetchall()
-
-            # 2. Monthly Revenue Trends (Last 12 Months usually)
-            # Uses date formatting to group payments by Month-Year
+            # 1. Monthly Revenue Trends
             sql_monthly = """
                 SELECT DATE_FORMAT(payment_date, '%Y-%m') as month_year, SUM(amount) as total
                 FROM payment
@@ -922,8 +905,7 @@ class Payments:
             cur.execute(sql_monthly)
             monthly_revenue = cur.fetchall()
 
-            # 3. Stats by Payment Method
-            # Aggregates usage count and total amount for each method
+            # 2. Stats by Payment Method
             sql_methods = """
                 SELECT payment_method, COUNT(*) as usage_count, SUM(amount) as total
                 FROM payment
@@ -933,7 +915,7 @@ class Payments:
             cur.execute(sql_methods)
             payment_methods_stats = cur.fetchall()
 
-            return top_categories, monthly_revenue, payment_methods_stats
+            return monthly_revenue, payment_methods_stats
 
 class Rentals:
     """Data-access helpers for the rental table."""
