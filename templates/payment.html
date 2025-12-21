@@ -116,34 +116,24 @@
   </div>
 </div>
 
-<div class="d-flex justify-content-center align-items-center mt-4 mb-5">
-    <nav aria-label="Page navigation">
-        <ul class="pagination mb-0 shadow-sm">
-            
-            <li class="page-item {{ 'disabled' if page == 1 else '' }}">
-                <a class="page-link fw-bold"
-                   style="border-radius: 0 !important;"
-                   href="{{ url_for('payments_list', page=page-1, q=q, payment_method=sel_method, sort_order=sel_sort) }}">
-                    &laquo; Previous
-                </a>
-            </li>
+{% if total_pages > 1 %}
+<nav aria-label="Page navigation" class="mt-4 mb-5">
+  <ul class="pagination justify-content-center">
 
-            <li class="page-item disabled">
-                 <span class="page-link text-dark fw-bold bg-light"
-                       style="border-radius: 0 !important; opacity: 1;">
-                     Page {{ page }} of {{ total_pages }}
-                 </span>
-            </li>
+    <li class="page-item {% if page <= 1 %}disabled{% endif %}">
+      <a class="page-link" href="{{ url_for('payments_list', page=page-1, q=q, payment_method=sel_method, sort_order=sel_sort) }}">Previous</a>
+    </li>
 
-            <li class="page-item {{ 'disabled' if page == total_pages else '' }}">
-                <a class="page-link fw-bold"
-                   style="border-radius: 0 !important;"
-                   href="{{ url_for('payments_list', page=page+1, q=q, payment_method=sel_method, sort_order=sel_sort) }}">
-                    Next &raquo;
-                </a>
-            </li>
-        </ul>
-    </nav>
-</div>
+    <li class="page-item disabled">
+      <span class="page-link">Page {{ page }} of {{ total_pages }}</span>
+    </li>
+
+    <li class="page-item {% if page >= total_pages %}disabled{% endif %}">
+      <a class="page-link" href="{{ url_for('payments_list', page=page+1, q=q, payment_method=sel_method, sort_order=sel_sort) }}">Next</a>
+    </li>
+
+  </ul>
+</nav>
+{% endif %}
 
 {% endblock %}
