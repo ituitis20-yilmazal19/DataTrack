@@ -952,7 +952,6 @@ class Rentals:
             return _dict_rows(cur)
 
     def get(self, rental_id: int):
-        """Only one rental but with details"""
         sql = """
             SELECT 
                 r.*,
@@ -969,7 +968,6 @@ class Rentals:
             return rows[0] if rows else None
 
     def add(self, customer_id, film_id):
-        """New rental (Today's date) with availability check"""
         
         check_sql = "SELECT 1 FROM rental WHERE film_id = %s AND return_date IS NULL"
         
@@ -997,7 +995,6 @@ class Rentals:
             cur.execute(sql, (rental_id,))
     
     def top_rented_films(self, limit=10):
-        """En çok kiralanan filmleri listeler (Complex Query Örneği)"""
         sql = """
             SELECT 
                 f.film_id, 
@@ -1012,6 +1009,52 @@ class Rentals:
         with self.connection_factory() as cn, cn.cursor() as cur:
             cur.execute(sql, (limit,))
             return _dict_rows(cur)
+
+    def update(self, rental_id: int, data: dict):
+        sql = """
+            UPDATE rental 
+            SET rental_date = %s, return_date = %s, film_id = %s, customer_id = %s
+            WHERE rental_id = %s
+        """
+        ret_date = data.get("return_date") if data.get("return_date") else None
+        
+        params = (data.get("rental_date"), ret_date, data.get("film_id"), data.get("customer_id"), rental_id)
+        with self.connection_factory() as cn, cn.cursor() as cur:
+            cur.execute(sql, params)
+
+    def delete(self, rental_id: int):
+        sql = "DELETE FROM rental WHERE rental_id = %s"
+        with self.connection_factory() as cn, cn.cursor() as cur:
+            cur.execute(sql, (rental_id,))
+
+    def count_search(self, q=None, status=None) -> int:
+        where = []
+        params = []
+
+        if status == 'not_returned':
+            where.append("r.return_date IS NULL")
+        elif status == 'returned':
+            where.append("r.return_date IS NOT NULL")
+
+        if q:
+            like_q = f"%{q}%"
+            where.append("(CONCAT(c.first_name, ' ', c.last_name) LIKE %s OR f.title LIKE %s)")
+            params.extend([like_q, like_q])
+
+        where_clause = ("WHERE " + " AND ".join(where)) if where else ""
+
+        sql = f"""
+            SELECT COUNT(*) 
+            FROM rental r
+            JOIN customer c ON r.customer_id = c.customer_id
+            JOIN film f ON r.film_id = f.film_id
+            {where_clause}
+        """
+
+        with self.connection_factory() as cn, cn.cursor() as cur:
+            cur.execute(sql, params)
+            (n,) = cur.fetchone()
+            return int(n)
 
 
 

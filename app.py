@@ -453,10 +453,22 @@ def rentals_list():
     q = request.args.get("q", type=str)
     status = request.args.get("status", type=str)
     page = max(request.args.get("page", default=1, type=int), 1)
+    page_size = 20 # Sayfa başına gösterilecek kayıt sayısı
     
-    rows = rentals.search(q=q, status=status, page=page)
+    # Verileri çek
+    rows = rentals.search(q=q, status=status, page=page, page_size=page_size)
     
-    return render_template("rentals.html", rentals=rows, q=q, sel_status=status, page=page)
+    # Toplam sayfa sayısını hesapla
+    total_count = rentals.count_search(q=q, status=status)
+    total_pages = math.ceil(total_count / page_size)
+    if total_pages == 0: total_pages = 1
+    
+    return render_template("rentals.html", 
+                           rentals=rows, 
+                           q=q, 
+                           sel_status=status, 
+                           page=page, 
+                           total_pages=total_pages)
 
 @app.route("/rental/add", methods=["GET", "POST"])
 def rental_add():
@@ -489,10 +501,46 @@ def rental_return(rental_id):
 
 @app.route("/rentals/top")
 def rentals_top():
-    # En çok kiralanan ilk 10 filmi getir
     top_films = rentals.top_rented_films(limit=10)
     return render_template("rentals_top.html", films=top_films)
 
+@app.route("/rental/edit/<int:rental_id>", methods=["GET", "POST"])
+@app.route("/rental/edit/<int:rental_id>", methods=["GET", "POST"])
+
+def rental_edit(rental_id):
+    if request.method == "POST":
+        if request.form.get("action") == "mark_returned":
+            rentals.return_film(rental_id)
+            flash("Film has been marked as returned.", "success")
+            return redirect(url_for("rental_edit", rental_id=rental_id))
+
+        payload = {
+            "rental_date": request.form.get("rental_date"),
+            "return_date": request.form.get("return_date"),
+            "film_id": request.form.get("film_id", type=int),
+            "customer_id": request.form.get("customer_id", type=int),
+        }
+        try:
+            rentals.update(rental_id, payload)
+            flash("Rental updated successfully.", "success")
+            return redirect(url_for("rentals_list"))
+        except Exception as e:
+            flash(f"Error updating: {e}", "danger")
+
+    rental = rentals.get(rental_id)
+    all_customers = customers.list_customers(page_size=1000)
+    all_films = films.search(page_size=1000)
+    
+    return render_template("rental_edit.html", rental=rental, customers=all_customers, films=all_films)
+
+@app.post("/rental/delete/<int:rental_id>")
+def rental_delete(rental_id):
+    try:
+        rentals.delete(rental_id)
+        flash("Rental record deleted.", "warning")
+    except Exception as e:
+        flash(f"Delete failed: {e}", "danger")
+    return redirect(url_for("rentals_list"))
 @app.get("/health")
 def health():
     try:
