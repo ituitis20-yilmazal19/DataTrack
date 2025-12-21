@@ -15,21 +15,27 @@
     <div class="col-lg-4 mb-4">
         <div class="card shadow border-0 h-100">
             <div class="card-body">
-                <h5 class="card-title fw-bold mb-4">Top Revenue by Country</h5>
+                <h5 class="card-title fw-bold mb-4">Top Revenue by Category</h5>
                 
                 <table class="table table-borderless table-sm">
                     <thead class="text-muted small text-uppercase">
                         <tr>
                             <th>Rank</th>
-                            <th>Country</th>
+                            <th>Category</th>
                             <th class="text-end">Total</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% for item in top_countries %}
+                        {% for item in top_categories %}
                         <tr class="align-middle">
                             <td class="fw-bold text-primary">{{ loop.index }}</td>
-                            <td>{{ item.country }}</td>
+                            
+                            <td>
+                                <span class="badge bg-light text-dark border">
+                                    {{ item.category_name }}
+                                </span>
+                            </td>
+                            
                             <td class="text-end fw-bold">${{ item.total_sales }}</td>
                         </tr>
                         {% endfor %}
