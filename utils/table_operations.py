@@ -860,6 +860,51 @@ class Payments:
             cur.execute(sql, params)
             cn.commit()
 
+    def get_analytics(self):
+        """
+        Runs complex queries to generate analytics data for the dashboard.
+        """
+        with self.connection_factory() as cn, cn.cursor(dictionary=True) as cur:
+            
+            # 1. COMPLEX QUERY: Total Revenue by Country
+            # Joins: Payment -> Customer -> Address -> City -> Country
+            sql_country = """
+                SELECT co.country, SUM(p.amount) as total_sales, COUNT(p.payment_id) as transaction_count
+                FROM payment p
+                JOIN customer c ON p.customer_id = c.customer_id
+                JOIN address a ON c.address_id = a.address_id
+                JOIN city ci ON a.city_id = ci.city_id
+                JOIN country co ON ci.country_id = co.country_id
+                GROUP BY co.country
+                ORDER BY total_sales DESC
+                LIMIT 10
+            """
+            cur.execute(sql_country)
+            top_countries = cur.fetchall()
+
+            # 2. Monthly Revenue Trends (Last 12 Months data usually)
+            sql_monthly = """
+                SELECT DATE_FORMAT(payment_date, '%Y-%m') as month_year, SUM(amount) as total
+                FROM payment
+                GROUP BY month_year
+                ORDER BY month_year DESC
+                LIMIT 10
+            """
+            cur.execute(sql_monthly)
+            monthly_revenue = cur.fetchall()
+
+            # 3. Stats by Payment Method (Your unique feature)
+            sql_methods = """
+                SELECT payment_method, COUNT(*) as usage_count, SUM(amount) as total
+                FROM payment
+                GROUP BY payment_method
+                ORDER BY total DESC
+            """
+            cur.execute(sql_methods)
+            payment_methods_stats = cur.fetchall()
+
+            return top_countries, monthly_revenue, payment_methods_stats
+
 class Rentals:
     """Data-access helpers for the rental table."""
     def __init__(self, connection_factory: Callable[[], mysql.connector.MySQLConnection]):
