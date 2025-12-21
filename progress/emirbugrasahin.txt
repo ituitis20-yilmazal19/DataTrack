@@ -13,3 +13,5 @@ Emir Buğra Şahin's progress
 6- pagination and a simple css are added
 
 7- category update, film add/delete features are added
+
+8- Analytics are added to films
