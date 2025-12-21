@@ -131,6 +131,11 @@ def add_film():
     categories = films.categories()
     return render_template("film_add.html", languages=languages, categories=categories)
 
+@app.route("/films/stats")
+def film_stats():
+    stats = films.get_stats()
+    return render_template("film_stats.html", stats=stats)
+
 @app.post("/film/<int:film_id>/delete")
 def delete_film(film_id):
     try:

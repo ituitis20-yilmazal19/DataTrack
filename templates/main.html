@@ -1,87 +1,128 @@
 {% extends "base.html" %}
+
 {% block title %}Admin Panel{% endblock %}
 
 {% block navbar %}{% endblock %}
 
 {% block content %}
-<div class="text-center mb-5">
-  <h1>Welcome to Admin Panel</h1>
-</div>
-
-<div class="d-flex flex-column align-items-center gap-4">
-  <div class="row g-4 justify-content-center w-100">
-    <div class="col-auto">
-      <a href="{{ url_for('films_list') }}" class="btn square-btn d-flex flex-column align-items-center justify-content-center">
-        <i class="bi bi-film fs-1 mb-2 text-white"></i>
-        <span class="text-white fs-5">Films</span>
-        <small class="text-white-50 mt-2 fw-bold">Browse and manage movies</small>
-      </a>
-    </div>
-    
-    <div class="col-auto">
-      <a href="{{ url_for('address') }}" class="btn square-btn d-flex flex-column align-items-center justify-content-center">
-        <i class="bi bi-geo-alt fs-1 mb-2 text-white"></i>
-        <span class="text-white fs-5">Address</span>
-        <small class="text-white-50 mt-2 fw-bold">Manage customer addresses</small>
-      </a>
-    </div>
-    
-    <div class="col-auto">
-      <a href="{{ url_for('customers_list') }}" class="btn square-btn d-flex flex-column align-items-center justify-content-center">
-        <i class="bi bi-people fs-1 mb-2 text-white"></i>
-        <span class="text-white fs-5">Customers</span>
-        <small class="text-white-50 mt-2 fw-bold">View customer records</small>
-      </a>
-    </div>
-  </div>
+<div class="container-fluid py-5">
   
-  <div class="row g-4 justify-content-center w-100">
-    <div class="col-auto">
-      <a href="{{ url_for('payments_list') }}" class="btn square-btn d-flex flex-column align-items-center justify-content-center">
-        <i class="bi bi-credit-card fs-1 mb-2 text-white"></i>
-        <span class="text-white fs-5">Payments</span>
-        <small class="text-white-50 mt-2 fw-bold">Track payment history</small>
-      </a>
+  <div class="text-center mb-5 fade-in">
+    <h1 class="display-4 mb-3">Welcome to Admin Panel</h1>
+    <p class="text-muted" style="font-family: 'Inter', sans-serif;">Select a module to manage your system</p>
+  </div>
+
+  <div class="d-flex flex-column align-items-center gap-4">
+    
+    <div class="row g-4 justify-content-center w-100">
+      <div class="col-auto">
+        <a href="{{ url_for('films_list') }}" class="dashboard-tile">
+          <i class="bi bi-film"></i>
+          <span>Films</span>
+          <small>Browse and manage movies</small>
+        </a>
+      </div>
+      
+      <div class="col-auto">
+        <a href="{{ url_for('address') }}" class="dashboard-tile">
+          <i class="bi bi-geo-alt"></i>
+          <span>Address</span>
+          <small>Manage customer addresses</small>
+        </a>
+      </div>
+      
+      <div class="col-auto">
+        <a href="{{ url_for('customers_list') }}" class="dashboard-tile">
+          <i class="bi bi-people"></i>
+          <span>Customers</span>
+          <small>View customer records</small>
+        </a>
+      </div>
     </div>
     
-    <div class="col-auto">
-      <a href="{{ url_for('rentals_list') }}" class="btn square-btn d-flex flex-column align-items-center justify-content-center">
-        <i class="bi bi-calendar-check fs-1 mb-2 text-white"></i>
-        <span class="text-white fs-5">Rentals</span>
-        <small class="text-white-50 mt-2 fw-bold">Manage rental orders</small>
-      </a>
+    <div class="row g-4 justify-content-center w-100">
+      <div class="col-auto">
+        <a href="{{ url_for('payments_list') }}" class="dashboard-tile">
+          <i class="bi bi-credit-card"></i>
+          <span>Payments</span>
+          <small>Track payment history</small>
+        </a>
+      </div>
+      
+      <div class="col-auto">
+        <a href="{{ url_for('rentals_list') }}" class="dashboard-tile">
+          <i class="bi bi-calendar-check"></i>
+          <span>Rentals</span>
+          <small>Manage rental orders</small>
+        </a>
+      </div>
     </div>
+
   </div>
 </div>
 
 <style>
-.square-btn {
-  width: 320px;
-  height: 320px;
-  border-radius: 16px;
-  background-color: #4f46e5;
-  border: none;
-  box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3);
-  transition: all 0.3s ease;
-}
+  .dashboard-tile {
+    /* Layout & Sizing */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 300px;
+    height: 300px;
+    text-decoration: none;
+    background: linear-gradient(145deg, #0f172a 0%, #1e293b 100%);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-soft);
+    color: #fff;
+    
+    font-family: 'Outfit', sans-serif;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+  }
 
-.square-btn:hover {
-  background-color: #4338ca;
-  transform: translateY(-4px);
-  box-shadow: 0 20px 25px -5px rgba(79, 70, 229, 0.4);
-}
+  /* Hover State */
+  .dashboard-tile:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px -4px rgba(15, 23, 42, 0.5);
+    background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%); /* Slight lighting shift */
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.1);
+  }
 
-.square-btn i {
-  font-size: 4rem !important;
-}
+  .dashboard-tile i {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    color: #fff;
+    text-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  }
 
-.square-btn span {
-  font-size: 1.5rem !important;
-  font-weight: 600;
-}
+  .dashboard-tile span {
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin-bottom: 0.5rem;
+  }
 
-.square-btn small {
-  font-size: 0.95rem !important;
-}
+  .dashboard-tile small {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 400;
+    opacity: 0.7;
+    text-align: center;
+    padding: 0 1rem;
+  }
+
+  .fade-in {
+    animation: fadeIn 0.6s ease-out;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
 </style>
 {% endblock %}

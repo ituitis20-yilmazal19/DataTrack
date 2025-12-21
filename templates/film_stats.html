@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}Film Statistics{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1>Film Analytics</h1>
+  <a href="{{ url_for('films_list') }}" class="btn btn-outline-secondary">
+    <i class="bi bi-arrow-left"></i> Back to Films
+  </a>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <h5 class="mb-3">Films by Category</h5>
+            
+            <div class="table-responsive">
+                <table class="table table-sm align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Rank</th>
+                            <th>Category</th>
+                            <th class="text-end">Count</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in stats.categories %}
+                        <tr>
+                            <td>{{ row.rank }}</td>
+                            <td>{{ row.name }}</td>
+                            <td class="text-end">{{ row.count }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <h5 class="mb-3">Films by Rating</h5>
+            
+            <div class="table-responsive">
+                <table class="table table-sm align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Rank</th>
+                            <th>Rating</th>
+                            <th class="text-end">Count</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in stats.ratings %}
+                        <tr>
+                            <td>{{ row.rank }}</td>
+                            <td>{{ row.rating }}</td>
+                            <td class="text-end">{{ row.count }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <h5 class="mb-3">Top 20 Actors</h5>
+            
+            <div class="table-responsive">
+                <table class="table table-sm align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Rank</th>
+                            <th>Actor</th>
+                            <th class="text-end">Count</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in stats.actors %}
+                        <tr>
+                            <td>{{ row.rank }}</td>
+                            <td>{{ row.name }}</td>
+                            <td class="text-end">{{ row.count }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
