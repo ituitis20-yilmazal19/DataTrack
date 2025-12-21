@@ -352,7 +352,6 @@ def payments_list():
     # Get the current page number (default is 1). Ensure it's at least 1.
     page = max(request.args.get("page", default=1, type=int), 1)
     
-    # --- DEĞİŞİKLİK BURADA YAPILDI ---
     # Define how many items to show per page (Updated to 20 to match friends' projects)
     per_page = 20 
 
@@ -438,11 +437,12 @@ def add_payment():
 @app.route('/payments/analytics')
 def payments_analytics():
     try:
-        # Get data from the complex queries
-        top_countries, monthly_revenue, method_stats = payments.get_analytics()
+        # Fetch analytics data from the model
+        # Now returns categories instead of countries
+        top_categories, monthly_revenue, method_stats = payments.get_analytics()
         
         return render_template('payments_analytics.html', 
-                               top_countries=top_countries, 
+                               top_categories=top_categories, 
                                monthly_revenue=monthly_revenue, 
                                method_stats=method_stats)
     except Exception as e:
