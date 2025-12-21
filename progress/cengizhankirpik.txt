@@ -6,3 +6,5 @@ Cengizhan Kırpık's progress
 4- "payment" class and related operations are added to table_operations.py
 5- Payments route added to app.py
 6- Edit payment methods and update data.payment.sql and payment.html
+7- Developed "Payment Analytics" page using complex SQL queries for monthly revenue and payment method statistics.
+8- Standardized UI components (buttons, spacing etc.) added
