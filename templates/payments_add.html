@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Add New Payment{% endblock %}
+
+{% block content %}
+<div class="card shadow mb-4">
+    <div class="card-header py-3 bg-primary text-white">
+        <h6 class="m-0 font-weight-bold">Add New Payment</h6>
+    </div>
+    <div class="card-body">
+        
+        <form method="POST">
+            
+            <div class="mb-3">
+                <label for="customer_id" class="form-label fw-bold">Customer</label>
+                <select class="form-select" id="customer_id" name="customer_id" required>
+                    <option value="">Select a customer...</option>
+                    {% for customer in customers %}
+                        <option value="{{ customer.customer_id }}">{{ customer.full_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="amount" class="form-label fw-bold">Amount ($)</label>
+                    <input type="number" class="form-control" id="amount" name="amount" step="0.01" placeholder="0.00" required>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label for="payment_date" class="form-label fw-bold">Payment Date</label>
+                    <input type="datetime-local" class="form-control" id="payment_date" name="payment_date" required>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label for="payment_method" class="form-label fw-bold">Payment Method</label>
+                <select class="form-select" id="payment_method" name="payment_method" required>
+                    <option value="">Select a method...</option>
+                    <option value="Credit Card">Credit Card</option>
+                    <option value="Debit Card">Debit Card</option>
+                    <option value="PayPal">PayPal</option>
+                    <option value="Bank Transfer">Bank Transfer</option>
+                    <option value="Crypto">Crypto</option>
+                    <option value="Klarna (BNPL)">Klarna (BNPL)</option>
+                </select>
+            </div>
+
+            <div>
+                <button type="submit" class="btn btn-primary me-2">Save Payment</button>
+                <a href="{{ url_for('payments_list') }}" class="btn btn-secondary">Cancel</a>
+            </div>
+
+        </form>
+    </div>
+</div>
+{% endblock %}
