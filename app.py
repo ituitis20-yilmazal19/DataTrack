@@ -401,6 +401,15 @@ def edit_payment(payment_id):
         )
     except Exception as e:
         return f"Error fetching data: {e}"
+
+@app.route('/payments/delete/<int:payment_id>')
+def delete_payment_route(payment_id):
+    try:
+        payments.delete_payment(payment_id)
+        
+        return redirect(url_for('payments_list'))
+    except Exception as e:
+        return f"Error deleting payment: {e}"
         
 # --- RENTALS ---
 @app.route("/rentals")
