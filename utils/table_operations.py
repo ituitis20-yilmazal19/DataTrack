@@ -875,13 +875,21 @@ class Rentals:
             return rows[0] if rows else None
 
     def add(self, customer_id, film_id):
-        """New rental (Today's date)"""
-        sql = """
+        """New rental (Today's date) with availability check"""
+        
+        check_sql = "SELECT 1 FROM rental WHERE film_id = %s AND return_date IS NULL"
+        
+        insert_sql = """
             INSERT INTO rental (rental_date, film_id, customer_id)
             VALUES (NOW(), %s, %s)
         """
+        
         with self.connection_factory() as cn, cn.cursor() as cur:
-            cur.execute(sql, (film_id, customer_id))
+            cur.execute(check_sql, (film_id,))
+            if cur.fetchone():
+                raise ValueError("Bu film şu an başka bir müşteride kirada ve henüz iade edilmedi.")
+            
+            cur.execute(insert_sql, (film_id, customer_id))
 
     def return_film(self, rental_id):
         """Return film"""

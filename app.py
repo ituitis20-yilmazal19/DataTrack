@@ -451,12 +451,13 @@ def rental_add():
                 rentals.add(customer_id=customer_id, film_id=film_id)
                 flash("Rental created successfully", "success")
                 return redirect(url_for("rentals_list"))
+            except ValueError as e:
+                flash(str(e), "danger")
             except Exception as e:
                 flash(f"Error: {e}", "danger")
         else:
             flash("Please select both customer and film", "warning")
 
-    # HATA DÜZELTİLDİ: 'limit' parametresi 'page_size' yapıldı
     all_customers = customers.list_customers(page_size=500) 
     all_films = films.search(page_size=500)
     
