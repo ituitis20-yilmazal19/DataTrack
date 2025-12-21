@@ -893,23 +893,25 @@ class Payments:
         """
         with self.connection_factory() as cn, cn.cursor(dictionary=True) as cur:
             
-            # 1. COMPLEX QUERY: Total Revenue by Country
-            # Joins: Payment -> Customer -> Address -> City -> Country
-            sql_country = """
-                SELECT co.country, SUM(p.amount) as total_sales, COUNT(p.payment_id) as transaction_count
+            # 1. COMPLEX QUERY: Total Revenue by Film Category
+            # We need to join 5 tables to link a payment to a film category:
+            # Payment -> Rental -> Inventory -> Film_Category -> Category
+            sql_category = """
+                SELECT c.name as category_name, SUM(p.amount) as total_sales
                 FROM payment p
-                JOIN customer c ON p.customer_id = c.customer_id
-                JOIN address a ON c.address_id = a.address_id
-                JOIN city ci ON a.city_id = ci.city_id
-                JOIN country co ON ci.country_id = co.country_id
-                GROUP BY co.country
+                JOIN rental r ON p.rental_id = r.rental_id
+                JOIN inventory i ON r.inventory_id = i.inventory_id
+                JOIN film_category fc ON i.film_id = fc.film_id
+                JOIN category c ON fc.category_id = c.category_id
+                GROUP BY c.name
                 ORDER BY total_sales DESC
                 LIMIT 10
             """
-            cur.execute(sql_country)
-            top_countries = cur.fetchall()
+            cur.execute(sql_category)
+            top_categories = cur.fetchall()
 
-            # 2. Monthly Revenue Trends (Last 12 Months data usually)
+            # 2. Monthly Revenue Trends (Last 12 Months usually)
+            # Uses date formatting to group payments by Month-Year
             sql_monthly = """
                 SELECT DATE_FORMAT(payment_date, '%Y-%m') as month_year, SUM(amount) as total
                 FROM payment
@@ -920,7 +922,8 @@ class Payments:
             cur.execute(sql_monthly)
             monthly_revenue = cur.fetchall()
 
-            # 3. Stats by Payment Method (Your unique feature)
+            # 3. Stats by Payment Method
+            # Aggregates usage count and total amount for each method
             sql_methods = """
                 SELECT payment_method, COUNT(*) as usage_count, SUM(amount) as total
                 FROM payment
@@ -930,7 +933,7 @@ class Payments:
             cur.execute(sql_methods)
             payment_methods_stats = cur.fetchall()
 
-            return top_countries, monthly_revenue, payment_methods_stats
+            return top_categories, monthly_revenue, payment_methods_stats
 
 class Rentals:
     """Data-access helpers for the rental table."""
