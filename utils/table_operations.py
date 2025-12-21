@@ -225,6 +225,55 @@ class Films:
         with self.connection_factory() as cn, cn.cursor() as cur:
             cur.execute(sql, params)
             return cur.fetchone()[0]
+    
+    def get_stats(self):
+        stats = {}
+        
+        with self.connection_factory() as cn, cn.cursor() as cur:
+            # 1. Categories
+            sql_cat = """
+                SELECT 
+                    c.name, 
+                    COUNT(fc.film_id) as count,
+                    ROW_NUMBER() OVER (ORDER BY COUNT(fc.film_id) DESC) as `rank`
+                FROM category c
+                JOIN film_category fc ON c.category_id = fc.category_id
+                GROUP BY c.category_id, c.name
+                ORDER BY count DESC
+            """
+            cur.execute(sql_cat)
+            stats['categories'] = _dict_rows(cur)
+
+            # 2. Actors
+            sql_actor = """
+                SELECT 
+                    CONCAT(a.first_name, ' ', a.last_name) as name, 
+                    COUNT(fa.film_id) as count,
+                    ROW_NUMBER() OVER (ORDER BY COUNT(fa.film_id) DESC) as `rank`
+                FROM actor a
+                JOIN film_actor fa ON a.actor_id = fa.actor_id
+                GROUP BY a.actor_id, name
+                ORDER BY count DESC
+                LIMIT 20
+            """
+            cur.execute(sql_actor)
+            stats['actors'] = _dict_rows(cur)
+
+            # 3. Ratings
+            sql_rating = """
+                SELECT 
+                    rating, 
+                    COUNT(*) as count,
+                    ROW_NUMBER() OVER (ORDER BY COUNT(*) DESC) as `rank`
+                FROM film
+                WHERE rating IS NOT NULL
+                GROUP BY rating
+                ORDER BY count DESC
+            """
+            cur.execute(sql_rating)
+            stats['ratings'] = _dict_rows(cur)
+            
+        return stats
 
 class Customers:
     """Data-access helpers for the customer table and related analytics."""
