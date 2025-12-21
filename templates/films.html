@@ -54,7 +54,7 @@
           <td>{{ f.rating or '' }}</td>
           <td>{{ f.language_name }}</td>
           <td>{{ f.categories or '' }}</td>
-          <td class="text-end"><a class="btn btn-sm btn-outline-primary" href="{{ url_for('film_detail', film_id=f['film_id']) }}">Open</a></td>
+          <td class="text-end"><a class="btn btn-sm btn-outline-primary" href="{{ url_for('film_detail', film_id=f['film_id']) }}">Edit</a></td>
         </tr>
         {% endfor %}
         {% if films|length == 0 %}
@@ -88,3 +88,4 @@
 </nav>
 {% endif %}
 {% endblock %}
+
