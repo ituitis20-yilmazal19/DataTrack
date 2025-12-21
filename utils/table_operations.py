@@ -655,7 +655,7 @@ class Addresses:
             cur.execute(sql, params)
             return cur.fetchone()[0]
 
-    def top_countries_by_customers(self, limit: int = 10):
+    def top_countries_by_customers(self, limit: int = 15):
         """
         Top countries by customer count.
         Returns: rank, customer_count, country
@@ -682,7 +682,7 @@ class Addresses:
                 row['rank'] = idx
             return results
 
-    def top_countries_by_spending(self, limit: int = 10):
+    def top_countries_by_spending(self, limit: int = 15):
         """
         Top countries by total payment amount.
         Returns: rank, country, total_spent
