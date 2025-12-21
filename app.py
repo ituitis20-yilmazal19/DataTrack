@@ -437,12 +437,9 @@ def add_payment():
 @app.route('/payments/analytics')
 def payments_analytics():
     try:
-        # Fetch analytics data from the model
-        # Now returns categories instead of countries
-        top_categories, monthly_revenue, method_stats = payments.get_analytics()
+        monthly_revenue, method_stats = payments.get_analytics()
         
         return render_template('payments_analytics.html', 
-                               top_categories=top_categories, 
                                monthly_revenue=monthly_revenue, 
                                method_stats=method_stats)
     except Exception as e:
