@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2>Top Rented Films (Top 10)</h2>
+  <a href="{{ url_for('rentals_list') }}" class="btn btn-outline-secondary">
+    <i class="bi bi-arrow-left"></i>Back to Rental
+  </a>
+</div>
+<div class="card mt-4">
+  <div class="table-responsive">
+<table class="table table-sm align-middle mb-0">
+    <thead class="table-light">
+        <tr>
+            <th>Film Name</th>
+            <th>Rental Count</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for film in films %}
+        <tr>
+            <td><span class="text-center text-dark py-4">{{ film.title }}</span></td>
+            <td><span class="text-center text-dark py-4">{{ film.rental_count }}</span></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+</div>
+{% endblock %}

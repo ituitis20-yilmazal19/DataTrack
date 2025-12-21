@@ -487,6 +487,12 @@ def rental_return(rental_id):
     flash("Movie returned successfully", "success")
     return redirect(url_for("rentals_list"))
 
+@app.route("/rentals/top")
+def rentals_top():
+    # En çok kiralanan ilk 10 filmi getir
+    top_films = rentals.top_rented_films(limit=10)
+    return render_template("rentals_top.html", films=top_films)
+
 @app.get("/health")
 def health():
     try:

@@ -995,6 +995,23 @@ class Rentals:
         with self.connection_factory() as cn, cn.cursor() as cur:
 
             cur.execute(sql, (rental_id,))
+    
+    def top_rented_films(self, limit=10):
+        """En çok kiralanan filmleri listeler (Complex Query Örneği)"""
+        sql = """
+            SELECT 
+                f.film_id, 
+                f.title, 
+                COUNT(r.rental_id) AS rental_count
+            FROM film f
+            JOIN rental r ON f.film_id = r.film_id
+            GROUP BY f.film_id, f.title
+            ORDER BY rental_count DESC
+            LIMIT %s
+        """
+        with self.connection_factory() as cn, cn.cursor() as cur:
+            cur.execute(sql, (limit,))
+            return _dict_rows(cur)
 
 
 
